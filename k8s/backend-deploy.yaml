@@ -1,0 +1,83 @@
+piVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+    name: backend
+
+        namespace: ecommerce
+
+        spec:
+
+            replicas: 2
+
+                selector:
+
+                      matchLabels:
+
+                              app: backend
+
+                                  template:
+
+                                        metadata:
+
+                                                labels:
+
+                                                          app: backend
+
+                                                                spec:
+
+                                                                        containers:
+
+                                                                                - name: backend
+
+                                                                                          image: <DOCKERHUB_USER>/ecommerce-backend:latest
+
+                                                                                                    imagePullPolicy: IfNotPresent
+
+                                                                                                              ports:
+
+                                                                                                                          - containerPort: 4000
+
+                                                                                                                                    env:
+
+                                                                                                                                                - name: MYSQL_HOST
+
+                                                                                                                                                              value: mysql
+
+                                                                                                                                                                          - name: MYSQL_USER
+
+                                                                                                                                                                                        valueFrom:
+
+                                                                                                                                                                                                        secretKeyRef:
+
+                                                                                                                                                                                                                          name: mysql-secret
+
+                                                                                                                                                                                                                                            key: mysql-user
+
+                                                                                                                                                                                                                                                        - name: MYSQL_PASSWORD
+
+                                                                                                                                                                                                                                                                      valueFrom:
+
+                                                                                                                                                                                                                                                                                      secretKeyRef:
+
+                                                                                                                                                                                                                                                                                                        name: mysql-secret
+
+                                                                                                                                                                                                                                                                                                                          key: mysql-password
+
+                                                                                                                                                                                                                                                                                                                                      - name: MYSQL_DATABASE
+
+                                                                                                                                                                                                                                                                                                                                                    valueFrom:
+
+                                                                                                                                                                                                                                                                                                                                                                    secretKeyRef:
+
+                                                                                                                                                                                                                                                                                                                                                                                      name: mysql-secret
+
+                                                                                                                                                                                                                                                                                                                                                                                                        key: mysql-database
+
+                                                                                                                                                                                                                                                                                                                                                                                                                  readinessProbe:
+
+                                                                                                                                                                                                                                                                                                                                                                                                                              httpGet:
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                         

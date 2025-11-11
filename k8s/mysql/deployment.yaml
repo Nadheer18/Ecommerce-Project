@@ -1,0 +1,83 @@
+piVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+    name: mysql
+
+        namespace: ecommerce
+
+        spec:
+
+            selector:
+
+                  matchLabels:
+
+                          app: mysql
+
+                              replicas: 1
+
+                                  template:
+
+                                        metadata:
+
+                                                labels:
+
+                                                          app: mysql
+
+                                                                spec:
+
+                                                                        containers:
+
+                                                                                - name: mysql
+
+                                                                                          image: mysql:8.0
+
+                                                                                                    env:
+
+                                                                                                                - name: MYSQL_ROOT_PASSWORD
+
+                                                                                                                              valueFrom:
+
+                                                                                                                                              secretKeyRef:
+
+                                                                                                                                                                name: mysql-secret
+
+                                                                                                                                                                                  key: mysql-root-password
+
+                                                                                                                                                                                              - name: MYSQL_DATABASE
+
+                                                                                                                                                                                                            valueFrom:
+
+                                                                                                                                                                                                                            secretKeyRef:
+
+                                                                                                                                                                                                                                              name: mysql-secret
+
+                                                                                                                                                                                                                                                                key: mysql-database
+
+                                                                                                                                                                                                                                                                            - name: MYSQL_USER
+
+                                                                                                                                                                                                                                                                                          valueFrom:
+
+                                                                                                                                                                                                                                                                                                          secretKeyRef:
+
+                                                                                                                                                                                                                                                                                                                            name: mysql-secret
+
+                                                                                                                                                                                                                                                                                                                                              key: mysql-user
+
+                                                                                                                                                                                                                                                                                                                                                          - name: MYSQL_PASSWORD
+
+                                                                                                                                                                                                                                                                                                                                                                        valueFrom:
+
+                                                                                                                                                                                                                                                                                                                                                                                        secretKeyRef:
+
+                                                                                                                                                                                                                                                                                                                                                                                                          name: mysql-secret
+
+                                                                                                                                                                                                                                                                                                                                                                                                                            key: mysql-password
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                      ports:
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                - containerPort: 3306
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          volumeMounts:

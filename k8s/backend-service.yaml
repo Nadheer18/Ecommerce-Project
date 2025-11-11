@@ -1,0 +1,25 @@
+piVersion: v1
+
+kind: Service
+
+metadata:
+
+    name: backend
+
+        namespace: ecommerce
+
+        spec:
+
+            selector:
+
+                  app: backend
+
+                      ports:
+
+                            - port: 4000
+
+                                    targetPort: 4000
+
+                                        type: ClusterIP
+
+
