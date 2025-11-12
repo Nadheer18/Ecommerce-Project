@@ -60,6 +60,23 @@ router.post("/change-password", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+// ✅ Get all users
+router.get("/users", async (req, res) => {
+  const users = await User.findAll({ attributes: ["username", "createdAt"] });
+  res.json(users);
+});
+
+// ✅ Delete user by username
+router.delete("/delete/:username", async (req, res) => {
+  const { username } = req.params;
+  try {
+    await User.destroy({ where: { username } });
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting user", error: err.message });
+  }
+});
+
 
 
 
