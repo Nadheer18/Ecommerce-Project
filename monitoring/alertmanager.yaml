@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 5s
+
+route:
+  receiver: telegram-receiver
+  group_wait: 3s          # Send alert immediately
+  group_interval: 30s     # Regroup quickly
+  repeat_interval: 1h    # Avoid spam
+
+receivers:
+- name: telegram-receiver
+  telegram_configs:
+  - bot_token: "7774720116:AAHugPRF09ePry6uvASliqZXJw2caRz_OkA"
+    chat_id: 980435852
+    message: |
+      🔥 *Alert: {{ .CommonLabels.alertname }}*
+      *Severity:* {{ .CommonLabels.severity }}
+      *Summary:* {{ .CommonAnnotations.summary }}
+      *Description:* {{ .CommonAnnotations.description }}
+
+    parse_mode: "Markdown"
+

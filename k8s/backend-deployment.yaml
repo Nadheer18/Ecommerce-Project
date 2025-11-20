@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: ecom
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: nadheer/ecommerce-backend:v1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          value: "Pass@123"
+        - name: DB_NAME
+          value: "ecommerce_db"
+

@@ -1,45 +1,51 @@
-version: '3.8'
-
 services:
-  mysql:
+  mysql8:
     image: mysql:8
-    container_name: ecommerce-mysql
+    container_name: mysql8
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_ROOT_PASSWORD: Pass@123
       MYSQL_DATABASE: ecommerce
       MYSQL_USER: user
-      MYSQL_PASSWORD: Pass@123
+      MYSQL_PASSWORD: userpass
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
-      - ecommerce-network
+      - ecommerce_network
 
   backend:
-    build: ./backend
-    container_name: ecommerce-backend
-    environment:
-      DB_HOST: mysql
-      DB_USER: user
-      DB_PASS: Pass@123
-      DB_NAME: ecommerce
+    image: ecommerce-backend
+    container_name: backend
+    restart: always
     depends_on:
-      - mysql
+      - mysql8
+    environment:
+      DB_HOST: mysql8
+      DB_USER: root
+      DB_PASSWORD: Pass@123
+      DB_NAME: ecommerce
     ports:
       - "3000:3000"
     networks:
-      - ecommerce-network
+      - ecommerce_network
 
   frontend:
-    build: ./frontend
-    container_name: ecommerce-frontend
-    ports:
-      - "3001:3001"
+    image: ecommerce-frontend
+    container_name: frontend
+    restart: always
     depends_on:
       - backend
+    ports:
+      - "5173:3001"
     networks:
-      - ecommerce-network
+      - ecommerce_network
+
+volumes:
+  mysql_data:
 
 networks:
-  ecommerce-network:
+  ecommerce_network:
     driver: bridge
 

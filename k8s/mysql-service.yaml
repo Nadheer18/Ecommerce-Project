@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
+  name: mysql
   namespace: ecom
 spec:
   selector:
-    app: backend
+    app: mysql
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 3306
+      targetPort: 3306
   type: ClusterIP
 

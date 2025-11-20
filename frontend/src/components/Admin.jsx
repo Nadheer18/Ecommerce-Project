@@ -12,7 +12,7 @@ function Admin() {
   // ✅ Fetch all products from backend
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://192.168.75.150:3000/api/products");
+      const res = await fetch("http://ecommerce.local/api/products");
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -24,7 +24,7 @@ function Admin() {
   const addProduct = async () => {
     if (!name || !price) return alert("Please enter product name and price!");
     try {
-      await fetch("http://192.168.75.150:3000/api/products", {
+      await fetch("http://ecommerce.local/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, price, image }),
@@ -44,7 +44,7 @@ function Admin() {
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await fetch(`http://192.168.75.150:3000/api/products/${id}`, {
+      await fetch(`http://ecommerce.local/api/products/${id}`, {
         method: "DELETE",
       });
       alert("🗑 Product deleted!");
@@ -58,7 +58,7 @@ function Admin() {
   // ✅ Fetch all users
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://192.168.75.150:3000/api/auth/users");
+      const res = await fetch("http://ecommerce.local/api/auth/users");
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -70,7 +70,7 @@ function Admin() {
   const deleteUser = async (userToDelete) => {
     if (!window.confirm(`Are you sure you want to delete user "${userToDelete}"?`)) return;
     try {
-      await fetch(`http://192.168.75.150:3000/api/auth/delete/${userToDelete}`, {
+      await fetch(`http://ecommerce.local/api/auth/delete/${userToDelete}`, {
         method: "DELETE",
       });
       alert(`🗑 User "${userToDelete}" deleted!`);

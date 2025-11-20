@@ -1,0 +1,83 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ecommerce-app-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+
+  - name: ecommerce-app
+    rules:
+
+    # 🔥 App Down (HTTP probe)
+    - alert: EcommerceAppDown
+      expr: probe_success{job="ecommerce-probe"} == 0
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "E-commerce Application Down"
+        description: "App endpoint {{ $labels.instance }} is unreachable."
+
+    # 🔥 High Latency
+    - alert: EcommerceHighLatency
+      expr: probe_duration_seconds{job="ecommerce-probe"} > 3
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High App Latency"
+        description: "App {{ $labels.instance }} responding slowly (>3s)."
+
+    # 🔥 High HTTP 5xx error rate
+    - alert: EcommerceHigh5xx
+      expr: increase(probe_http_status_code{job="ecommerce-probe", status_code=~"5.."}[2m]) > 3
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High HTTP 5xx Errors"
+        description: "Ecommerce app is returning 5xx errors."
+
+    # 🔥 High Pod CPU
+    - alert: EcommerceHighCPU
+      expr: sum(rate(container_cpu_usage_seconds_total{pod=~"ecommerce.*", image!=""}[5m])) by (pod) > 0.5
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage"
+        description: "Pod {{ $labels.pod }} using too much CPU."
+
+    # 🔥 High Pod Memory
+    - alert: EcommerceHighMemory
+      expr: sum(container_memory_usage_bytes{pod=~"ecommerce.*"}) by (pod) > 500000000
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage"
+        description: "Pod {{ $labels.pod }} memory > 500MB"
+
+    # 🔥 Pod CrashLoop
+    - alert: EcommerceCrashLoop
+      expr: increase(kube_pod_container_status_restarts_total{pod=~"ecommerce.*"}[5m]) > 3
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Ecommerce Pod Restarting"
+        description: "{{ $labels.pod }} restarted more than 3 times in 5 minutes."
+
+    # 🔥 Low request (site stuck or 0 traffic)
+    - alert: EcommerceNoTraffic
+      expr: probe_success{job="ecommerce-probe"} == 1 unless (increase(probe_success{job="ecommerce-probe"}[1m]) > 0)
+      for: 3m
+      labels:
+        severity: warning
+      annotations:
+        summary: "No Incoming Traffic"
+        description: "Ecommerce app has no successful requests in last 3 minutes."
+

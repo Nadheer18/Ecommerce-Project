@@ -8,7 +8,7 @@ function Auth() {
   // Register
   const handleRegister = async () => {
     try {
-      const res = await fetch("http://192.168.75.150:3000/api/auth/register", {
+      const res = await fetch("http://ecommerce.local/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -23,7 +23,7 @@ function Auth() {
   // Login
   const handleLogin = async () => {
   try {
-    const res = await fetch("http://192.168.75.150:3000/api/auth/login", {
+    const res = await fetch("http://ecommerce.local/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

@@ -1,16 +1,21 @@
-FROM node:20-alpine
+# Use Node.js 20 (stable LTS)
+FROM node:20
 
+# Create working directory inside the container
 WORKDIR /app
 
+# Copy package files first for caching
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Install MySQL client
-RUN apk add --no-cache mysql-client bash netcat-openbsd
-
+# Copy all backend source code
 COPY . .
 
-RUN chmod +x wait-for-mysql.sh
+# Expose the backend port
+EXPOSE 3000
 
-CMD ["./wait-for-mysql.sh", "mysql", "npm", "start"]
+# Start your backend app
+CMD ["npm", "start"]
 
