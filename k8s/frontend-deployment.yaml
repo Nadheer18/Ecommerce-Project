@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: nadheer/ecommerce-frontend:v2
+        image: nadheer/ecommerce-frontend:v1
         ports:
         - containerPort: 80
 
