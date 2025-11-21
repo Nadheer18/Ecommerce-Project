@@ -1,0 +1,34 @@
+🧰 Step-by-step: Run Kind Kubernetes on Docker
+🪜 Step 1: Install kind
+If not already installed, run:
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+Check version:
+kind --version
+You should see something like:
+kind v0.24.0
+
+🪜 Step 2: Verify Docker is running
+sudo systemctl status docker
+If not running, start it:
+sudo systemctl start docker
+_________
+Step-by-Step: Install kubectl on Ubuntu
+🪜 Option 1: Official apt installation (recommended)
+sudo apt update -y
+sudo apt install -y ca-certificates curl
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] \
+https://apt.kubernetes.io/ kubernetes-xenial main" | \
+sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt update -y
+sudo apt install -y kubectl
+🪜 Option 2: (Simpler) Install using Snap
+If you prefer an easier single command:
+sudo snap install kubectl --classic
+🪜 Step 3: Verify installation
+kubectl version --client
+You should see something like:
+
+Client Version: v1.31.0
