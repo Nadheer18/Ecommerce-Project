@@ -1,0 +1,13 @@
+Run this:
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+
+Wait for pods to be ready:
+
+kubectl get pods -n ingress-nginx
+
+
+You should see:
+
+ingress-nginx-controller   1/1   Running
