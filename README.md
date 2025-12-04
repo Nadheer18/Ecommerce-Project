@@ -102,7 +102,8 @@ This project represents an end-to-end DevOps workflow from coding → building �
 
 ## **📂** **Repository Structure**
 
-Ecommerce-Project /        
+Ecommerce-Project /      
+
     ├── frontend /         # React App
     ├── backend /          # Node.js API
     ├── k8s /              # All Kubernetes Manifests 
