@@ -67,21 +67,13 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 
 # **ðŸ§° Tech Stack**
 
-
-
 ## **Frontend**
-
-
 
 * React.js
 * Axios
 * NGINX (production)
-
-
-
-### **Backend**
-
-
+  
+## **Backend**
 
 * Node.js
 * Express.js
@@ -89,11 +81,7 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 * Sequelize ORM
 * MySQL
 
-
-
-##### Infrastructure
-
-
+## Infrastructure
 
 * Docker
 * Kubernetes (kubeadm)
@@ -103,11 +91,7 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 * Nginx Reverse Proxy
 * AWS EC2
 
-
-
-###### **CI/CD**
-
-
+### **CI/CD**
 
 * Jenkins Freestyle + Pipeline
 * GitHub Webhooks
