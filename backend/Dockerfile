@@ -1,21 +1,24 @@
-# Use Node.js 20 (stable LTS)
-FROM node:20
+# ---- Base Image ----
+FROM node:20-alpine
 
-# Create working directory inside the container
+# ---- Set working directory ----
 WORKDIR /app
 
-# Copy package files first for caching
+# ---- Copy package files ----
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# ---- Install dependencies ----
+RUN npm install --production
 
-# Copy all backend source code
+# ---- Copy the application code ----
 COPY . .
 
-# Expose the backend port
+# ---- Create uploads folder inside container ----
+RUN mkdir -p uploads && chmod -R 755 uploads
+
+# ---- Expose port ----
 EXPOSE 3000
 
-# Start your backend app
-CMD ["npm", "start"]
+# ---- Start the server ----
+CMD ["node", "index.js"]
 

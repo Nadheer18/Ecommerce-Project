@@ -3,19 +3,30 @@ kind: Ingress
 metadata:
   name: ecommerce-ingress
   namespace: ecom
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
   - host: ecommerce.local
     http:
       paths:
-      - path: /api
-        pathType: Prefix
+      - path: /api/(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: backend
             port:
               number: 3000
+
+      - path: /uploads/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3000
+
       - path: /
         pathType: Prefix
         backend:
