@@ -81,7 +81,7 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 * Sequelize ORM
 * MySQL
 
-## **Infrastructure**
+# **Infrastructure**
 
 * Docker
 * Kubernetes (kubeadm)
