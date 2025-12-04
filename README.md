@@ -130,7 +130,7 @@ Ecommerce-Project/
 │
 └── Jenkinsfile           # CI/CD Pipeline
 
-
+---
 
 # **🚀 1. Deploy Infrastructure (Terraform)**
 
@@ -152,7 +152,7 @@ terraform apply -auto-approve
 #### On the master:
 ```bash
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
-
+```
 
 
 ####Configure kubectl:
@@ -160,21 +160,21 @@ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 mkdir -p $HOME/.kube
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
+```
 
 
 
 
 ###### Install Flannel:
-
+```bash
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 
-
+```
 
 ###### Print join token anytime:
-
+```bash
 kubeadm token create --print-join-command
-
+```
 
 
 ##### **🚀 3. Join Worker Nodes**
@@ -182,25 +182,25 @@ kubeadm token create --print-join-command
 
 
 ###### On each worker:
-
+```bash
 sudo kubeadm reset pre-flight checks
-
+```
 Then:
-
+```bash
 kubeadm join <master-ip>:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
 
-
+```
 
 ##### **🌐 4. Install MetalLB**
 
 ###### Install required components:
-
+```bash
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
-
+```
 ###### 
 
 ###### create metallb-ip-pool.yaml:-
-
+```bash
 apiVersion: metallb.io/v1beta1
 
 kind: IPAddressPool
@@ -217,10 +217,10 @@ spec:
 
 &nbsp;   - 10.0.1.200-10.0.1.205
 
-
+```
 
 ###### create metallb-l2.yaml
-
+```bash
 apiVersion: metallb.io/v1beta1
 
 kind: L2Advertisement
@@ -236,42 +236,42 @@ spec:
 &nbsp; ipAddressPools:
 
 &nbsp;   - public-ip-pool
+```
 
-
-
+```bash
 kubectl apply -f metallb-ip-pool.yaml
 
 kubectl apply -f metallb-l2.yaml
-
+```
 
 
 ##### **🌍 5. Install Ingress-NGINX**
-
+```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
 
 kubectl get svc -n ingress-nginx
 
-
+```
 
 ##### **🔁 6. Setup Nginx Reverse Proxy EC2 (Public EC2)**
 
 ###### SSH into your Nginx EC2:
-
+```bash
 sudo apt update
 
 sudo apt install nginx -y
 
 ###### Create config:
-
+```bash
 sudo nano /etc/nginx/sites-available/ecommerce
 
 
-
+```
 
 
 ###### Paste:
 
-
+```bash
 
 upstream ecommerce\_backend {
 
@@ -306,13 +306,13 @@ server {
 }
 
 
-
+```
 
 
 ###### Enable:
 
 
-
+```bash
 sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
 
 sudo rm /etc/nginx/sites-enabled/default
@@ -320,7 +320,7 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t
 
 sudo systemctl restart nginx
-
+```
 
 
 
