@@ -79,7 +79,7 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 
 
 
-###### **Backend**
+### **Backend**
 
 
 
@@ -91,7 +91,7 @@ This project represents an end-to-end DevOps workflow from coding â†’ building â
 
 
 
-###### **Infrastructure**
+##### Infrastructure
 
 
 
