@@ -70,7 +70,8 @@ This Terraform project deploys a complete AWS-based infrastructure for running a
 
 # 📂 Project Structure
 
- ├──terraform
+ terraform
+ 
     ├── ec2-master.tf
     ├── ec2-workers.tf
     ├── jenkins-server.tf
