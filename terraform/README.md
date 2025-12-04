@@ -28,7 +28,6 @@ This Terraform project deploys a complete AWS-based infrastructure for running a
                          └────────────┬───────────┘
                                       │ kubectl apply
                                       ▼
-
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                          AWS Infrastructure (VPC)                            │
 │                                                                              │
