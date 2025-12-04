@@ -70,28 +70,23 @@ This Terraform project deploys a complete AWS-based infrastructure for running a
 
 # 📂 Project Structure
 
-
-
 terraform/
-│
-├── main.tf
-├── provider.tf
-├── variables.tf
-├── outputs.tf
-│
-├── vpc.tf
-├── subnets.tf
-├── routing.tf
-├── security-groups.tf
-│
-├── ec2-master.tf
-├── ec2-workers.tf
-├── jenkins-server.tf
-│
-└── scripts/
-├── master.sh
-├── worker.sh
-└── jenkins.sh
+    ├── ec2-master.tf
+    ├── ec2-workers.tf
+    ├── jenkins-server.tf
+    ├── main.tf
+    ├── outputs.tf
+    ├── provider.tf
+    ├── README.md
+    ├── routing.tf
+    ├── scripts
+    │   ├── jenkins.sh
+    │   ├── master.sh
+    │   └── worker.sh
+    ├── security-groups.tf
+    ├── subnets.tf
+    ├── variables.tf
+    └── vpc.tf
 
 
 ---
