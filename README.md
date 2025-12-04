@@ -185,7 +185,7 @@ kubeadm join <master-ip>:6443 --token <token> --discovery-token-ca-cert-hash sha
 
 ```
 
-##### **🌐 4. Install MetalLB**
+## **🌐 4. Install MetalLB**
 
 ###### Install required components:
 ```bash
@@ -200,21 +200,13 @@ vi metallb-ip-pool.yaml
 ###### Paste:
 ```bash
 apiVersion: metallb.io/v1beta1
-
 kind: IPAddressPool
-
 metadata:
-
-&nbsp; name: public-ip-pool
-
-&nbsp; namespace: metallb-system
-
+  name: public-ip-pool
+  namespace: metallb-system
 spec:
-
-&nbsp; addresses:
-
-&nbsp;   - 10.0.1.200-10.0.1.205
-
+  addresses:
+    - 10.0.1.200-10.0.1.205
 ```
 
 ###### create metallb-l2.yaml
@@ -224,20 +216,13 @@ vi metallb-l2.yaml
 ###### Paste:
 ```bash
 apiVersion: metallb.io/v1beta1
-
 kind: L2Advertisement
-
 metadata:
-
-&nbsp; name: l2-advertisement
-
-&nbsp; namespace: metallb-system
-
+  name: l2-advertisement
+  namespace: metallb-system
 spec:
-
-&nbsp; ipAddressPools:
-
-&nbsp;   - public-ip-pool
+  ipAddressPools:
+    - public-ip-pool
 ```
 
 ```bash
@@ -258,48 +243,31 @@ kubectl get svc -n ingress-nginx
 ```bash
 sudo apt update
 sudo apt install nginx -y
+systemctl status nginx
 ```
-###### Create config:
+###### Create Reverse Proxy Config:
 ```bash
 sudo nano /etc/nginx/sites-available/ecommerce
 ```
 ###### Paste:
 
 ```bash
-
-upstream ecommerce\_backend {
-
-&nbsp;   server 10.0.1.200:80; 	   #kubectl get svc -n ingress-nginx
-
+upstream ecommerce_backend {
+    server 10.0.1.200:80; # Kubernetes LoadBalancer EXTERNAL-IP (from `kubectl get svc -n ingress-nginx`)
 }
-
-
 
 server {
+    listen 80;
+    server_name ecommerce.local;
 
-&nbsp;   listen 80;
-
-&nbsp;   server\_name ecommerce.local;
-
-
-
-&nbsp;   location / {
-
-&nbsp;       proxy\_pass http://ecommerce\_backend;
-
-&nbsp;       proxy\_set\_header Host $host;
-
-&nbsp;       proxy\_set\_header X-Real-IP $remote\_addr;
-
-&nbsp;       proxy\_set\_header X-Forwarded-For $proxy\_add\_x\_forwarded\_for;
-
-&nbsp;       proxy\_set\_header X-Forwarded-Proto $scheme;
-
-&nbsp;   }
-
+    location / {
+        proxy_pass http://ecommerce_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
-
-
 ```
 
 
@@ -318,7 +286,7 @@ Jenkins installed via Terraform.
 
 
 ###### Access:
-http://<jenkins-ip>:8080
+http://jenkins-ip:8080
 
 ###### Pipeline runs:
 
@@ -355,7 +323,7 @@ Your app loads through Kubernetes LoadBalancer → Ingress → Pods 🎉
 
 
 ## **👨‍💻 Author**
-###### **Nadheer KV**
+### **Nadheer KV**
 
 DevOps | Cloud | Kubernetes | Terraform Engineer
 
