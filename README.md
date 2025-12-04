@@ -67,22 +67,19 @@ This project represents an end-to-end DevOps workflow from coding → building �
 
 # **🧰 Tech Stack**
 
-## **Frontend**
-
+### **Frontend**
 * React.js
 * Axios
 * NGINX (production)
   
 ### **Backend**
-
 * Node.js
 * Express.js
 * JWT Auth
 * Sequelize ORM
 * MySQL
 
-# **Infrastructure**
-
+### **Infrastructure**
 * Docker
 * Kubernetes (kubeadm)
 * Flannel CNI
@@ -91,94 +88,58 @@ This project represents an end-to-end DevOps workflow from coding → building �
 * Nginx Reverse Proxy
 * AWS EC2
 
-## **CI/CD**
+### **CI/CD**
 
 * Jenkins Freestyle + Pipeline
 * GitHub Webhooks
 * kubectl-based deployment
 
-
-
-###### **IaC**
-
-
+### **IaC**
 
 * Terraform
 * VPC, Subnet, Routing, SG
 * EC2 for Master, Workers, Jenkins
 
-
-
-##### **📂** **Repository Structure**
+## **📂** **Repository Structure**
 
 Ecommerce-Project/
 
 │
-
 ├── frontend/             # React App
-
 ├── backend/              # Node.js API
-
 │
-
 ├── k8s/                  # All Kubernetes Manifests
-
 │   ├── namespace.yaml
-
 │   ├── frontend-deployment.yaml
-
 │   ├── backend-deployment.yaml
-
 │   ├── ingress.yaml
-
 │   ├── mysql-deployment.yaml
-
 │   ├── mysql-service.yaml
-
 │   ├── Install NGINX Ingress Controller
-
 │
-
 ├── terraform/            # Full AWS automation
-
 │   ├── main.tf
-
 │   ├── vpc.tf
-
 │   ├── ec2-master.tf
-
 │   ├── ec2-workers.tf
-
 │   ├── jenkins-server.tf
-
 │   └── scripts/
-
 │       ├── master.sh
-
 │       ├── worker.sh
-
 │       └── jenkins.sh
-
 │
-
 └── Jenkinsfile           # CI/CD Pipeline
 
 
 
-##### **🚀 1. Deploy Infrastructure (Terraform)**
+# **🚀 1. Deploy Infrastructure (Terraform)**
 
 cd terraform
-
 terraform init
-
 terraform plan
-
 terraform apply -auto-approve
 
-
-
-###### Outputs:
-
+### Outputs:
 * Master IP
 * Worker IPs
 * Jenkins public IP
