@@ -28,6 +28,11 @@ This Terraform project deploys a complete AWS-based infrastructure for running a
                      └────────────┬───────────┘
                                   │ kubectl apply
                                   ▼
+           ┌─────────────────────────────────────────────────┐
+           │      AWS Infrastructure (VPC 10.0.0.0/16)       │
+           │        Public EC2 Server                        │
+           │        (maps ecommerce.local → LB IP)           │
+           └─────────────────────────────────────────────────┘
                      ┌────────────────────────────────┐
                      │      Nginx Reverse Proxy       │
                      │        Public EC2 Server       │
