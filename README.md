@@ -1,274 +1,515 @@
-📘 PROJECT REPORT
-CI/CD Pipeline With Docker, Jenkins, and Kind Kubernetes Cluster Deployment
-End-to-End Implementation — From Scratch to Production-Ready Setup
-✨ 1. Project Overview
+##### **📘 E-Commerce Project — Full Stack + Kubernetes + Terraform + CI/CD**
 
-This project demonstrates a complete DevOps workflow for deploying a full-stack e-commerce application (Frontend + Backend + Database) using:
 
-Jenkins CI/CD Pipeline
 
-Docker containerization
+This repository contains a complete E-Commerce application built using modern technologies and deployed using a full DevOps pipeline, including:
 
-Kind (Kubernetes in Docker)
 
-Kubernetes Deployments, Services, and Ingress
 
-DockerHub container registry
+* React Frontend
+* Node.js + Express Backend
+* MySQL Database
+* Docker containerization
+* Kubernetes deployment (kubeadm)
+* MetalLB LoadBalancer
+* Ingress NGINX
+* Jenkins CI/CD
+* Terraform AWS Infrastructure Automation
 
-Automated build → test → image push → deployment pipeline
 
-The entire system runs fully automated, enabling smooth and reliable deployments.
 
-✨ 2. Objectives
+This project represents an end-to-end DevOps workflow from coding → building → deployment → production-ready infrastructure.
 
-Containerize frontend and backend applications using Docker
 
-Host images on DockerHub
 
-Build a full Jenkins CI/CD pipeline
+##### **🏗️ Architecture Overview**
 
-Deploy the application into a Kind Kubernetes cluster
 
-Use Nginx Ingress for domain-based routing
 
-Automate cluster creation and Kubeconfig updates
+&nbsp;                              ┌────────────────────────┐
 
-Deliver a fully functional e-commerce system on local Kubernetes
+&nbsp;                              │      GitHub Repo       │
 
-✨ 3. Technologies Used
-DevOps Tools
+&nbsp;                              └────────────┬───────────┘
 
-Jenkins (Pipeline-as-Code)
+&nbsp;                                           │
 
-Docker & DockerHub
+&nbsp;                                           ▼
 
-Kubernetes (Kind)
+&nbsp;                              ┌────────────────────────┐
 
-Kubectl CLI
+&nbsp;                              │       Jenkins EC2      │
 
-Nginx Ingress Controller
+&nbsp;                              │  - Docker              │
 
-GitHub Repository
+&nbsp;                              │  - kubectl             │
 
-Programming Stack
+&nbsp;                              │  - CI/CD Pipeline      │
 
-NodeJS Backend
+&nbsp;                              └────────────┬───────────┘
 
-ReactJS Frontend
+&nbsp;                                           │ kubectl apply
 
-MySQL Database
+&nbsp;                                           ▼
 
-✨ 4. Project Architecture
-GitHub  →  Jenkins  →  Docker Build  → DockerHub Push
-                                     ↓
-                   Kind Kubernetes Cluster (local)
-                                     ↓
-                 Deployments + Services + Ingress
-                                     ↓
-                      http://ecommerce.local
+&nbsp;          ┌───────────────────────────────────────────────────────────────────────────────┐
 
-Kubernetes Components
-Namespace: ecom
+&nbsp;          │                  AWS Infrastructure (VPC 10.0.0.0/16)                         │
 
-frontend-deployment.yaml
+&nbsp;          │                                                                               │
 
-backend-deployment.yaml
+&nbsp;          │  ┌─────────────────── Public Subnet (10.0.1.0/24) ─────────────────────────┐  │    
 
-mysql-deployment.yaml
+&nbsp;          │  │  ┌───────────────────────────────┐     ┌─────────────────────────────┐  │  │
 
-Service files for each component
+&nbsp;          │  │  │     Kubernetes Master EC2     │     │     Jenkins Server EC2      │  │  │
 
-Nginx ingress routing
+&nbsp;          │  │  │       10.0.1.220              │     │     Public + Private IP     │  │  │
 
-✨ 5. Major Milestones
-✅ Milestone 1: Source Code Setup
+&nbsp;          │  │  └───────────────────────────────┘     └─────────────────────────────┘  │  │
 
-Frontend React app and backend Node API in GitHub
+&nbsp;          │  │                                                                         │  │
 
-Directory structure prepared
+&nbsp;          │  │  ┌───────────────────────────────┐     ┌─────────────────────────────┐  │  │
 
-Jenkins connected to GitHub via polling
+&nbsp;          │  │  │     Worker Node 1 EC2         │     │     Worker Node 2 EC2       │  │  │
 
-✅ Milestone 2: Dockerization
+&nbsp;          │  │  │     10.0.1.x                  │     │     10.0.1.x                │  │  │
 
-Created Dockerfiles:
+&nbsp;          │  │  └───────────────────────────────┘     └─────────────────────────────┘  │  │
 
-Backend Dockerfile
-FROM node:16
-WORKDIR /app
-COPY package*.json .
-RUN npm install
-COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
+&nbsp;          │  └─────────────────────────────────────────────────────────────────────────┘  │
 
-Frontend Dockerfile
-FROM nginx:alpine
-COPY build/ /usr/share/nginx/html
-EXPOSE 80
+&nbsp;          └───────────────────────────────────────────────────────────────────────────────┘
 
+&nbsp;                           ┌────────────────────────────────┐
 
-Images tested locally → pushed manually.
+&nbsp;                           │      Nginx Reverse Proxy       │
 
-✅ Milestone 3: DockerHub Setup
+&nbsp;                           │        Public EC2 Server       │
 
-Created repositories:
+&nbsp;                           │ (maps ecommerce.local → LB IP) │
 
-ecommerce-frontend
+&nbsp;                           └──────────────┬─────────────────┘
 
-ecommerce-backend
+&nbsp;                                          │ HTTP
 
-Added DockerHub credentials in Jenkins (Docker_cred)
+&nbsp;                                          ▼
 
-✅ Milestone 4: Jenkins Pipeline Implementation
-Pipeline stages:
+&nbsp;                               MetalLB LoadBalancer (10.0.1.200)
 
-Checkout
+&nbsp;                                          │
 
-Install Node dependencies
+&nbsp;                                          ▼
 
-Run tests
+&nbsp;                                Ingress-NGINX Controller
 
-Build frontend and backend
+&nbsp;                                          │
 
-Build Docker images
+&nbsp;                                          ▼
 
-DockerHub login (via credential binding)
+&nbsp;                          Frontend / Backend Kubernetes Pods
 
-Push images to DockerHub
 
-Deploy to Kubernetes using kubectl
 
-Pipeline executed successfully.
 
-✅ Milestone 5: Kind Cluster Setup
-Problems encountered:
 
-Port 80 already in use → Kind failed
 
-Ingress pod stuck in Pending
 
-kubeconfig mismatch after cluster recreation
+##### **🧰 Tech Stack**
 
-Solutions:
 
-Stopped system nginx
 
-Created custom Kind config:
+###### **Frontend**
 
-extraPortMappings:
-- containerPort: 80
-  hostPort: 80
 
 
-Added node labels ingress-ready=true
+* React.js
+* Axios
+* NGINX (production)
 
-Installed ingress-nginx (Kind provider version)
 
-Auto-updated kubeconfig for root + Jenkins
 
-Cluster became fully operational.
+###### **Backend**
 
-✅ Milestone 6: Kubernetes Deployment
 
-Created K8s manifests:
 
-Deployments:
+* Node.js
+* Express.js
+* JWT Auth
+* Sequelize ORM
+* MySQL
 
-Backend (exposing port 3000)
 
-Frontend (exposing port 80)
 
-MySQL (port 3306)
+###### **Infrastructure**
 
-Services:
 
-NodePort not used
 
-Only ClusterIP
+* Docker
+* Kubernetes (kubeadm)
+* Flannel CNI
+* MetalLB LoadBalancer
+* Ingress NGINX
+* Nginx Reverse Proxy
+* AWS EC2
 
-Ingress handles external access
 
-Ingress:
-Host: ecommerce.local
-/api → backend
-/    → frontend
 
+###### **CI/CD**
 
-Ingress tested successfully using:
 
-curl http://ecommerce.local
 
-✅ Milestone 7: Application Validation
+* Jenkins Freestyle + Pipeline
+* GitHub Webhooks
+* kubectl-based deployment
 
-Pods running:
 
-backend - Running
-frontend - Running
-mysql - Running
-ingress - Running
 
+###### **IaC**
 
-Frontend accessible at:
+
+
+* Terraform
+* VPC, Subnet, Routing, SG
+* EC2 for Master, Workers, Jenkins
+
+
+
+##### **📂** **Repository Structure**
+
+Ecommerce-Project/
+
+│
+
+├── frontend/             # React App
+
+├── backend/              # Node.js API
+
+│
+
+├── k8s/                  # All Kubernetes Manifests
+
+│   ├── namespace.yaml
+
+│   ├── frontend-deployment.yaml
+
+│   ├── backend-deployment.yaml
+
+│   ├── ingress.yaml
+
+│   ├── mysql-deployment.yaml
+
+│   ├── mysql-service.yaml
+
+│   ├── Install NGINX Ingress Controller
+
+│
+
+├── terraform/            # Full AWS automation
+
+│   ├── main.tf
+
+│   ├── vpc.tf
+
+│   ├── ec2-master.tf
+
+│   ├── ec2-workers.tf
+
+│   ├── jenkins-server.tf
+
+│   └── scripts/
+
+│       ├── master.sh
+
+│       ├── worker.sh
+
+│       └── jenkins.sh
+
+│
+
+└── Jenkinsfile           # CI/CD Pipeline
+
+
+
+##### **🚀 1. Deploy Infrastructure (Terraform)**
+
+cd terraform
+
+terraform init
+
+terraform plan
+
+terraform apply -auto-approve
+
+
+
+###### Outputs:
+
+* Master IP
+* Worker IPs
+* Jenkins public IP
+* Jenkins URL
+
+
+
+##### **🚀 2. Configure Kubernetes Cluster**
+
+###### On the master:
+
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+
+
+
+Configure kubectl:
+
+mkdir -p $HOME/.kube
+
+sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+
+
+###### Install Flannel:
+
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+
+
+
+###### Print join token anytime:
+
+kubeadm token create --print-join-command
+
+
+
+##### **🚀 3. Join Worker Nodes**
+
+
+
+###### On each worker:
+
+sudo kubeadm reset pre-flight checks
+
+Then:
+
+kubeadm join <master-ip>:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+
+
+
+##### **🌐 4. Install MetalLB**
+
+###### Install required components:
+
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+
+###### 
+
+###### create metallb-ip-pool.yaml:-
+
+apiVersion: metallb.io/v1beta1
+
+kind: IPAddressPool
+
+metadata:
+
+&nbsp; name: public-ip-pool
+
+&nbsp; namespace: metallb-system
+
+spec:
+
+&nbsp; addresses:
+
+&nbsp;   - 10.0.1.200-10.0.1.205
+
+
+
+###### create metallb-l2.yaml
+
+apiVersion: metallb.io/v1beta1
+
+kind: L2Advertisement
+
+metadata:
+
+&nbsp; name: l2-advertisement
+
+&nbsp; namespace: metallb-system
+
+spec:
+
+&nbsp; ipAddressPools:
+
+&nbsp;   - public-ip-pool
+
+
+
+kubectl apply -f metallb-ip-pool.yaml
+
+kubectl apply -f metallb-l2.yaml
+
+
+
+##### **🌍 5. Install Ingress-NGINX**
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+kubectl get svc -n ingress-nginx
+
+
+
+##### **🔁 6. Setup Nginx Reverse Proxy EC2 (Public EC2)**
+
+###### SSH into your Nginx EC2:
+
+sudo apt update
+
+sudo apt install nginx -y
+
+###### Create config:
+
+sudo nano /etc/nginx/sites-available/ecommerce
+
+
+
+
+
+###### Paste:
+
+
+
+upstream ecommerce\_backend {
+
+&nbsp;   server 10.0.1.200:80; 	   #kubectl get svc -n ingress-nginx
+
+}
+
+
+
+server {
+
+&nbsp;   listen 80;
+
+&nbsp;   server\_name ecommerce.local;
+
+
+
+&nbsp;   location / {
+
+&nbsp;       proxy\_pass http://ecommerce\_backend;
+
+&nbsp;       proxy\_set\_header Host $host;
+
+&nbsp;       proxy\_set\_header X-Real-IP $remote\_addr;
+
+&nbsp;       proxy\_set\_header X-Forwarded-For $proxy\_add\_x\_forwarded\_for;
+
+&nbsp;       proxy\_set\_header X-Forwarded-Proto $scheme;
+
+&nbsp;   }
+
+}
+
+
+
+
+
+###### Enable:
+
+
+
+sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
+
+sudo rm /etc/nginx/sites-enabled/default
+
+sudo nginx -t
+
+sudo systemctl restart nginx
+
+
+
+
+
+Add to your laptop hosts:
+
+
+
+<nginx-public-ip> ecommerce.local
+
+
+
+##### **🤖 7. Jenkins CI/CD Pipeline**
+
+
+
+Jenkins installed via Terraform.
+
+
+
+###### Access:
+
+http://<jenkins-ip>:8080
+
+
+
+###### Pipeline runs:
+
+1. Clone GitHub
+2. kubectl apply -f k8s/
+3. Deploy updated pods in cluster
+
+
+
+##### **💻 8. Add Hosts Entry on Your Laptop**
+
+
+
+###### Open:
+
+
+
+C:\\Windows\\System32\\drivers\\etc\\hosts
+
+
+
+###### Add:
+
+<nginx-public-ip> ecommerce.local
+
+
+
+###### Open in browser:
 
 http://ecommerce.local
 
 
-Backend reachable via:
-
-http://ecommerce.local/api
 
 
-Everything is functioning perfectly.
 
-✨ 6. Final Outcome
+Your app loads through Kubernetes LoadBalancer → Ingress → Pods 🎉
 
-The system is now fully automated:
 
-✔ CI/CD pipeline builds and pushes Docker images
-✔ Automatic deployment into Kubernetes
-✔ Nginx ingress handles routing
-✔ Full-stack application live at ecommerce.local
-✔ Jenkins + Kind + Docker pipeline runs without errors
-✔ Local Kubernetes behaves like production cluster
 
-You now have a complete DevOps pipeline, used in real industry setups.
+##### **🎯 Future Enhancements (Planned)**
 
-✨ 7. Key Achievements
 
-Deployment automated end-to-end
 
-Learned Docker, Kubernetes, Jenkins pipelines
+* Full Monitoring (Prometheus + Grafana)
+* EKS migration
+* ArgoCD GitOps pipeline
+* Helm Chart packaging
+* Terraform modules + backend
 
-Solved complex networking issues
 
-Integrated Ingress Controller
 
-Successfully delivered full infra using local cluster
+##### **👨‍💻 Author**
 
-Built production-style workflow using only Docker + Kind
 
-✨ 8. Next Level Enhancements (Future Work)
 
-ArgoCD GitOps deployment
+###### **Nadheer KV**
 
-Helm chart packaging
+DevOps | Cloud | Kubernetes | Terraform Engineer
 
-Monitoring (Prometheus + Grafana)
-
-Logging (Loki)
-
-SSL certificates (Let's Encrypt)
-
-Blue/Green deployment using Argo Rollouts
-
-Terraform-based EKS deployment
-
-Horizontal Pod Autoscaling (HPA)
-
-❤️ 9. Conclusion
-
-This project demonstrates end-to-end DevOps capability, covering:
-containerization, CI/CD, Kubernetes orchestration, ingress routing, cluster automation, and service deployment.
-
-You successfully built and deployed a full e-commerce app using modern DevOps practices. This is portfolio-ready and interview-ready.
