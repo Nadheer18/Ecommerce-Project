@@ -134,33 +134,30 @@ Ecommerce-Project/
 
 # **🚀 1. Deploy Infrastructure (Terraform)**
 
+```bash
 cd terraform
 terraform init
 terraform plan
 terraform apply -auto-approve
 
-### Outputs:
+#### Outputs:
 * Master IP
 * Worker IPs
 * Jenkins public IP
 * Jenkins URL
 
+# **🚀 2. Configure Kubernetes Cluster**
 
-
-##### **🚀 2. Configure Kubernetes Cluster**
-
-###### On the master:
-
+#### On the master:
+```bash
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 
 
 
-Configure kubectl:
-
+####Configure kubectl:
+```bash
 mkdir -p $HOME/.kube
-
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
-
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 
