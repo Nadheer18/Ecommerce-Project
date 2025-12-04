@@ -102,32 +102,24 @@ This project represents an end-to-end DevOps workflow from coding → building �
 
 ## **📂** **Repository Structure**
 
-Ecommerce-Project/
-
-├── frontend/             # React App
-├── backend/              # Node.js API
-│
-├── k8s/                  # All Kubernetes Manifests
-│   ├── namespace.yaml
-│   ├── frontend-deployment.yaml
-│   ├── backend-deployment.yaml
-│   ├── ingress.yaml
-│   ├── mysql-deployment.yaml
-│   ├── mysql-service.yaml
-│   ├── Install NGINX Ingress Controller
-│
-├── terraform/            # Full AWS automation
-│   ├── main.tf
-│   ├── vpc.tf
-│   ├── ec2-master.tf
-│   ├── ec2-workers.tf
-│   ├── jenkins-server.tf
-│   └── scripts/
-│       ├── master.sh
-│       ├── worker.sh
-│       └── jenkins.sh
-│
-└── Jenkinsfile           # CI/CD Pipeline
+terraform /
+ 
+    ├── ec2-master.tf
+    ├── ec2-workers.tf
+    ├── jenkins-server.tf
+    ├── main.tf
+    ├── outputs.tf
+    ├── provider.tf
+    ├── README.md
+    ├── routing.tf
+    ├── scripts
+    │   ├── jenkins.sh
+    │   ├── master.sh
+    │   └── worker.sh
+    ├── security-groups.tf
+    ├── subnets.tf
+    ├── variables.tf
+    └── vpc.tf
 
 ---
 
@@ -323,7 +315,7 @@ Your app loads through Kubernetes LoadBalancer → Ingress → Pods 🎉
 
 
 ## **👨‍💻 Author**
-### **Nadheer KV**
+#### **Nadheer KV**
 
 DevOps | Cloud | Kubernetes | Terraform Engineer
 
