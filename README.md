@@ -154,11 +154,11 @@ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 
 #### Configure kubectl:
-``bash
+```bash
 mkdir -p $HOME/.kube
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-``
+```
 
 #### Install Flannel:
 ```bash
@@ -166,21 +166,20 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 
 ```
 
-###### Print join token anytime:
+#### Print join token anytime:
 ```bash
 kubeadm token create --print-join-command
 ```
 
-
-##### **🚀 3. Join Worker Nodes**
-
+## **🚀 3. Join Worker Nodes**
 
 
-###### On each worker:
+
+#### On each worker:
 ```bash
 sudo kubeadm reset pre-flight checks
 ```
-Then:
+##### Then:
 ```bash
 kubeadm join <master-ip>:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
 
@@ -192,9 +191,13 @@ kubeadm join <master-ip>:6443 --token <token> --discovery-token-ca-cert-hash sha
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
 ```
-###### 
+ 
 
 ###### create metallb-ip-pool.yaml:-
+```bash
+vi metallb-ip-pool.yaml
+```
+###### Paste:
 ```bash
 apiVersion: metallb.io/v1beta1
 
@@ -216,6 +219,10 @@ spec:
 
 ###### create metallb-l2.yaml
 ```bash
+vi metallb-l2.yaml
+```
+###### Paste:
+```bash
 apiVersion: metallb.io/v1beta1
 
 kind: L2Advertisement
@@ -235,35 +242,27 @@ spec:
 
 ```bash
 kubectl apply -f metallb-ip-pool.yaml
-
 kubectl apply -f metallb-l2.yaml
 ```
 
 
-##### **🌍 5. Install Ingress-NGINX**
+## **🌍 5. Install Ingress-NGINX**
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-
 kubectl get svc -n ingress-nginx
-
 ```
 
-##### **🔁 6. Setup Nginx Reverse Proxy EC2 (Public EC2)**
+## **🔁 6. Setup Nginx Reverse Proxy EC2 (Public EC2)**
 
-###### SSH into your Nginx EC2:
+#### SSH into your Nginx EC2:
 ```bash
 sudo apt update
-
 sudo apt install nginx -y
-
+```
 ###### Create config:
 ```bash
 sudo nano /etc/nginx/sites-available/ecommerce
-
-
 ```
-
-
 ###### Paste:
 
 ```bash
@@ -309,38 +308,17 @@ server {
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
-
 sudo rm /etc/nginx/sites-enabled/default
-
 sudo nginx -t
-
 sudo systemctl restart nginx
 ```
-
-
-
-
-Add to your laptop hosts:
-
-
-
-<nginx-public-ip> ecommerce.local
-
-
-
-##### **🤖 7. Jenkins CI/CD Pipeline**
-
-
-
+## **🤖 7. Jenkins CI/CD Pipeline**
 Jenkins installed via Terraform.
 
 
 
 ###### Access:
-
 http://<jenkins-ip>:8080
-
-
 
 ###### Pipeline runs:
 
@@ -348,41 +326,25 @@ http://<jenkins-ip>:8080
 2. kubectl apply -f k8s/
 3. Deploy updated pods in cluster
 
-
-
-##### **💻 8. Add Hosts Entry on Your Laptop**
-
-
+## **💻 8. Add Hosts Entry on Your Laptop**
 
 ###### Open:
 
-
-
 C:\\Windows\\System32\\drivers\\etc\\hosts
-
-
 
 ###### Add:
 
 <nginx-public-ip> ecommerce.local
 
-
-
 ###### Open in browser:
 
 http://ecommerce.local
-
-
-
-
 
 Your app loads through Kubernetes LoadBalancer → Ingress → Pods 🎉
 
 
 
-##### **🎯 Future Enhancements (Planned)**
-
-
+## **🎯 Future Enhancements (Planned)**
 
 * Full Monitoring (Prometheus + Grafana)
 * EKS migration
@@ -392,10 +354,7 @@ Your app loads through Kubernetes LoadBalancer → Ingress → Pods 🎉
 
 
 
-##### **👨‍💻 Author**
-
-
-
+## **👨‍💻 Author**
 ###### **Nadheer KV**
 
 DevOps | Cloud | Kubernetes | Terraform Engineer
