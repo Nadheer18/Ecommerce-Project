@@ -1,4 +1,4 @@
-##### 📘 E-Commerce Project — Full Stack + Kubernetes + Terraform + CI/CD
+# 📘 E-Commerce Project — Full Stack + Kubernetes + Terraform + CI/CD
 
 
 
