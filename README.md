@@ -65,11 +65,11 @@ This project represents an end-to-end DevOps workflow from coding → building �
                            Frontend / Backend Kubernetes Pods
 
 
-##### **🧰 Tech Stack**
+# **🧰 Tech Stack**
 
 
 
-###### **Frontend**
+## **Frontend**
 
 
 
