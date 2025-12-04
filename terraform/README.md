@@ -30,7 +30,8 @@ This Terraform project deploys a complete AWS-based infrastructure for running a
                                   ▼
 
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│                        AWS Infrastructure (VPC 10.0.0.0/16)                   │
+│                       
+AWS Infrastructure (VPC 10.0.0.0/16)                   │
 │                                                                               │
 │   ┌──────────────────────── Public Subnet (10.0.1.0/24) ─────────────────────┐│
 │   │                                                                          ││
