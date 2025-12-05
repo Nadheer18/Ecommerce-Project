@@ -34,6 +34,7 @@ function Navbar() {
         <li><Link to="/home">🏠 Home</Link></li>
         <li><Link to="/products">🛍 Products</Link></li>
         <li><Link to="/contact">📞 Contact</Link></li>
+	<li><Link to="/support">Support</Link></li>
       </ul>
 
       <div className="profile-section" ref={menuRef}>

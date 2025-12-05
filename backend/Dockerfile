@@ -1,24 +1,40 @@
-# ---- Base Image ----
+# -------------------------------
+# BASE IMAGE
+# -------------------------------
 FROM node:20-alpine
 
-# ---- Set working directory ----
+# -------------------------------
+# SET WORKING DIRECTORY
+# -------------------------------
 WORKDIR /app
 
-# ---- Copy package files ----
+# -------------------------------
+# COPY PACKAGE FILES
+# -------------------------------
 COPY package*.json ./
 
-# ---- Install dependencies ----
+# -------------------------------
+# INSTALL DEPENDENCIES
+# -------------------------------
 RUN npm install --production
 
-# ---- Copy the application code ----
+# -------------------------------
+# COPY APPLICATION SOURCE
+# -------------------------------
 COPY . .
 
-# ---- Create uploads folder inside container ----
-RUN mkdir -p uploads && chmod -R 755 uploads
+# -------------------------------
+# CREATE UPLOADS FOLDER (FOR IMAGES)
+# -------------------------------
+RUN mkdir -p /app/uploads && chmod -R 755 /app/uploads
 
-# ---- Expose port ----
+# -------------------------------
+# EXPOSE APP PORT
+# -------------------------------
 EXPOSE 3000
 
-# ---- Start the server ----
+# -------------------------------
+# RUN APPLICATION
+# -------------------------------
 CMD ["node", "index.js"]
 

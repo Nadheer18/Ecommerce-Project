@@ -15,16 +15,10 @@ spec:
     spec:
       containers:
       - name: backend
-        image: nadheer/ecommerce-backend:latest
+        image: nadheer/ecommerce-backend:v1.1
         ports:
         - containerPort: 3000
-        env:
-        - name: DB_HOST
-          value: "mysql"
-        - name: DB_USER
-          value: "root"
-        - name: DB_PASSWORD
-          value: "Pass@123"
-        - name: DB_NAME
-          value: "ecommerce_db"
+        envFrom:
+        - secretRef:
+            name: ecom-backend-secret
 

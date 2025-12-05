@@ -6,6 +6,7 @@ const sequelize = require("./db");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 const productRouter = require("./routes/products");
+const supportRouter = require("./routes/support");
 
 const app = express();
 
@@ -38,6 +39,8 @@ app.use("/api/products", productRouter);
 // STATIC FILE SERVING FOR UPLOADS
 // -------------------------------
 app.use("/uploads", express.static("uploads"));
+
+app.use("/api/support", supportRouter);
 
 // -------------------------------
 // START SERVER

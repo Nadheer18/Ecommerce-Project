@@ -8,6 +8,7 @@ import ChangePassword from "./components/ChangePassword";
 import Admin from "./components/Admin";
 import AdminLogin from "./components/AdminLogin";
 import Register from "./components/Register";
+import Support from "./components/Support";
 
 function App() {
   const isAdmin = localStorage.getItem("isAdmin");
@@ -21,6 +22,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/change-password" element={<ChangePassword username="test" />} />
 	<Route path="/admin-login" element={<AdminLogin />} />
+	<Route path="/support" element={<Support />} />
 	<Route
           path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/admin-login" />} />
       </Routes>

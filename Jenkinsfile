@@ -63,11 +63,11 @@ pipeline {
                 sh '''
                 echo "Building Docker Images..."
                 cd frontend
-                docker build -t nadheer/ecommerce-frontend:latest .
+                docker build -t nadheer/ecommerce-frontend:v1.1.1 .
                 cd ..
 
                 cd backend
-                docker build -t nadheer/ecommerce-backend:latest .
+                docker build -t nadheer/ecommerce-backend:v1.1.1 .
                 cd ..
                 '''
             }
@@ -86,8 +86,8 @@ pipeline {
                 sh '''
                 echo "Pushing Docker images to Docker Hub..."
 
-                docker push $FRONTEND_IMAGE:latest
-                docker push $BACKEND_IMAGE:latest
+                docker push $FRONTEND_IMAGE:v1.1.1
+                docker push $BACKEND_IMAGE:v1.1.1
                 '''
             }
         }
@@ -111,6 +111,7 @@ pipeline {
                     kubectl apply -f k8s/mysql-deployment.yaml
                     kubectl apply -f k8s/mysql-service.yaml
                     kubectl apply -f k8s/ingress.yaml
+		    kubectl apply -f k8s/ecom-backend-secret.yaml
 
                     kubectl get pods -n ecom -o wide
                     '''

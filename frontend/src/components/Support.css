@@ -1,0 +1,21 @@
+.support-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.support-container input,
+.support-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.support-container button {
+  padding: 10px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
