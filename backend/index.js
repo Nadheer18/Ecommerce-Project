@@ -7,7 +7,7 @@ const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 const productRouter = require("./routes/products");
 const supportRouter = require("./routes/support");
-
+const cartRoutes = require('./routes/cart');
 const app = express();
 
 // -------------------------------
@@ -41,7 +41,7 @@ app.use("/api/products", productRouter);
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/support", supportRouter);
-
+app.use('/api/cart', cartRoutes);
 // -------------------------------
 // START SERVER
 // -------------------------------

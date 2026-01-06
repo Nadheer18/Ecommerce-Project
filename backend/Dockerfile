@@ -1,40 +1,16 @@
-# -------------------------------
-# BASE IMAGE
-# -------------------------------
-FROM node:20-alpine
+FROM node:20
 
-# -------------------------------
-# SET WORKING DIRECTORY
-# -------------------------------
 WORKDIR /app
 
-# -------------------------------
-# COPY PACKAGE FILES
-# -------------------------------
+# Copy package files first
 COPY package*.json ./
 
-# -------------------------------
-# INSTALL DEPENDENCIES
-# -------------------------------
-RUN npm install --production
+RUN npm install
 
-# -------------------------------
-# COPY APPLICATION SOURCE
-# -------------------------------
+# Copy ALL backend files including config/
 COPY . .
 
-# -------------------------------
-# CREATE UPLOADS FOLDER (FOR IMAGES)
-# -------------------------------
-RUN mkdir -p /app/uploads && chmod -R 755 /app/uploads
-
-# -------------------------------
-# EXPOSE APP PORT
-# -------------------------------
 EXPOSE 3000
 
-# -------------------------------
-# RUN APPLICATION
-# -------------------------------
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
 

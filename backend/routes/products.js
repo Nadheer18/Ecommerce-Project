@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const Product = require("../models/Product");
+
+// Load Product model correctly (function-style Sequelize)
+const { Product } = require("../models");
 
 // -------------------------------
 // MULTER STORAGE CONFIG
@@ -40,7 +42,10 @@ router.post("/", async (req, res) => {
     const product = await Product.create({ name, price, image });
     res.json({ message: "Product added!", product });
   } catch (err) {
-    res.status(500).json({ message: "Error adding product", error: err.message });
+    res.status(500).json({ 
+      message: "Error adding product", 
+      error: err.message 
+    });
   }
 });
 
@@ -48,8 +53,15 @@ router.post("/", async (req, res) => {
 // GET ALL PRODUCTS
 // -------------------------------
 router.get("/", async (req, res) => {
-  const products = await Product.findAll();
-  res.json(products);
+  try {
+    const products = await Product.findAll();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching products",
+      error: err.message
+    });
+  }
 });
 
 // -------------------------------
@@ -57,10 +69,18 @@ router.get("/", async (req, res) => {
 // -------------------------------
 router.delete("/:id", async (req, res) => {
   try {
-    await Product.destroy({ where: { id: req.params.id } });
+    const deleted = await Product.destroy({ where: { id: req.params.id } });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.json({ message: "Product deleted" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting product", error: err.message });
+    res.status(500).json({ 
+      message: "Error deleting product", 
+      error: err.message 
+    });
   }
 });
 

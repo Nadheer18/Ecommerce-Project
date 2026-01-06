@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import Auth from "./components/Auth";
 import Home from "./components/Home";
 import Products from "./components/Products";
@@ -10,21 +11,31 @@ import AdminLogin from "./components/AdminLogin";
 import Register from "./components/Register";
 import Support from "./components/Support";
 
+// Cart Page (make sure your file is: src/components/CartPage.jsx)
+import CartPage from "./components/CartPage";
+
 function App() {
   const isAdmin = localStorage.getItem("isAdmin");
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Auth />} />
-	<Route path="/register" element={<Register />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
         <Route path="/products" element={<Products />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/change-password" element={<ChangePassword username="test" />} />
-	<Route path="/admin-login" element={<AdminLogin />} />
-	<Route path="/support" element={<Support />} />
-	<Route
-          path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/admin-login" />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/support" element={<Support />} />
+
+        {/* NEW CART ROUTE */}
+        <Route path="/cart" element={<CartPage />} />
+
+        <Route
+          path="/admin"
+          element={isAdmin ? <Admin /> : <Navigate to="/admin-login" />}
+        />
       </Routes>
     </Router>
   );
