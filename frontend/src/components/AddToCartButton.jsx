@@ -1,21 +1,22 @@
-import React from 'react';
-import API from '../api';
+import React from "react";
+import API from "../api";
 
-export default function AddToCartButton({ productId, qty = 1, onAdded }) {
-  const handleAdd = async () => {
+export default function AddToCartButton({ productId }) {
+  const addToCart = async () => {
     try {
-      const res = await API.post('/cart', { productId, quantity: qty });
-      if (res.data.success) {
-        if (typeof onAdded === 'function') onAdded(res.data.item);
-        // optionally dispatch event to update navbar count
-        window.dispatchEvent(new CustomEvent('cartUpdated'));
-      }
-    } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || 'Failed to add to cart');
+      await API.post("/cart", { productId, quantity: 1 });
+      alert("Item added to cart!");
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } catch (error) {
+      console.error("Add to cart failed", error);
+      alert("Failed to add item to cart");
     }
   };
 
-  return <button onClick={handleAdd} className="btn-add-cart">Add to cart</button>;
+  return (
+    <button onClick={addToCart} className="add-cart-btn">
+      Add to Cart
+    </button>
+  );
 }
 
