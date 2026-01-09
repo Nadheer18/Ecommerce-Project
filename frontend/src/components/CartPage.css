@@ -1,0 +1,17 @@
+.cart-container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.cart-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cart-container th,
+.cart-container td {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+}
+

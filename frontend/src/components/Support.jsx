@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createSupportTicket } from "../services/api";
-import "./Support.css"; // optional: add styles or reuse existing CSS
+import "./Support.css";
 
 export default function Support() {
   const [form, setForm] = useState({
@@ -25,100 +25,47 @@ export default function Support() {
 
     try {
       const res = await createSupportTicket(form);
-      if (res && res.success) {
-        setTicket(res.ticket || "No ticket returned");
+      if (res?.success) {
+        setTicket(res.ticket);
         setForm({ name: "", email: "", orderId: "", message: "" });
       } else {
         setError(res?.error || "Failed to create ticket");
       }
     } catch (err) {
-      setError(err.message || "Network error");
+      setError("Network error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
+    <div className="support-container">
       <h2>Customer Support</h2>
-      <p>If you have an issue with an order, raise a ticket here — you will get a ticket ID.</p>
+      <p>Raise a support ticket — you will receive a ticket ID.</p>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 8 }}>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Your name"
-            required
-            style={{ width: "100%", padding: 8 }}
-          />
-        </div>
+        <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" required />
+        <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Your email" required />
+        <input name="orderId" value={form.orderId} onChange={handleChange} placeholder="Order ID (optional)" />
+        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Describe your issue" rows={5} required />
 
-        <div style={{ marginBottom: 8 }}>
-          <input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Your email"
-            type="email"
-            required
-            style={{ width: "100%", padding: 8 }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <input
-            name="orderId"
-            value={form.orderId}
-            onChange={handleChange}
-            placeholder="Order ID (optional)"
-            style={{ width: "100%", padding: 8 }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <textarea
-            name="message"
-            value={form.message}
-            onChange={handleChange}
-            placeholder="Describe your issue"
-            required
-            rows={6}
-            style={{ width: "100%", padding: 8 }}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="support-actions">
           <button type="submit" disabled={loading}>
             {loading ? "Submitting..." : "Submit Ticket"}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setForm({ name: "", email: "", orderId: "", message: "" });
-              setError(null);
-              setTicket(null);
-            }}
-          >
+          <button type="button" onClick={() => setForm({ name:"", email:"", orderId:"", message:"" })}>
             Reset
           </button>
         </div>
       </form>
 
       {ticket && (
-        <div style={{ marginTop: 16, padding: 12, border: "1px solid #4caf50", borderRadius: 6 }}>
-          <strong>Success!</strong>
-          <div>Your Ticket ID: <code>{ticket}</code></div>
-          <div>We will update the ticket in Jira — you can quote the ticket ID when contacting us.</div>
+        <div className="support-success">
+          ✅ Ticket created: <strong>{ticket}</strong>
         </div>
       )}
 
-      {error && (
-        <div style={{ marginTop: 16, padding: 12, border: "1px solid #ff5252", borderRadius: 6 }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
+      {error && <div className="support-error">❌ {error}</div>}
     </div>
   );
 }

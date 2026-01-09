@@ -6,21 +6,34 @@ function Auth() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
-    try {
-      const res = await API.post("/auth/login", { username, password });
+const handleLogin = async () => {
+  console.log("LOGIN BUTTON CLICKED"); // 🔍 step 1
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("username", res.data.username);
-        window.location.href = "/home";
-      } else {
-        alert("Login failed — no token received");
-      }
-    } catch (err) {
-      alert("❌ Error: " + err.message);
+  try {
+    const res = await API.post("/auth/login", {
+      username,
+      password
+    });
+
+    console.log("LOGIN RESPONSE:", res.data); // 🔍 step 2
+
+    if (res.data.token) {
+      console.log("SAVING TOKEN TO LOCALSTORAGE"); // 🔍 step 3
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
+
+      window.location.href = "/home";
+    } else {
+      console.error("NO TOKEN RECEIVED");
+      alert("Login failed: token missing");
     }
-  };
+  } catch (err) {
+    console.error("LOGIN ERROR:", err.response?.data || err);
+    alert("Login failed");
+  }
+};
+
 
   const handleRegister = async () => {
     try {
@@ -66,4 +79,5 @@ function Auth() {
 }
 
 export default Auth;
+
 
