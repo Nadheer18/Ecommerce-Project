@@ -35,7 +35,6 @@ router.get("/users", async (req, res) => {
     res.status(500).json({ message: "Error fetching users", error: err.message });
   }
 });
-
 // ✅ Delete user by ID
 // ✅ Delete user by ID
 router.delete("/users/:id", async (req, res) => {
@@ -53,3 +52,4 @@ router.delete("/users/:id", async (req, res) => {
 
 module.exports = router;
 
+                   
