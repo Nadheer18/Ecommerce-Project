@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import Navbar from "./Navbar";        // ✅ ADD THIS
 import { createSupportTicket } from "../services/api";
-import "./Support.css"; // optional: add styles or reuse existing CSS
+import "./Support.css";
 
 export default function Support() {
   const [form, setForm] = useState({
@@ -39,23 +40,26 @@ export default function Support() {
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
-      <h2>Customer Support</h2>
-      <p>If you have an issue with an order, raise a ticket here — you will get a ticket ID.</p>
+    <>
+      {/* ✅ NAVBAR */}
+      <Navbar />
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 8 }}>
+      <div className="support-container">
+        <h2>Customer Support</h2>
+        <p>
+          If you have an issue with an order, raise a ticket here — you will get a
+          ticket ID.
+        </p>
+
+        <form onSubmit={handleSubmit}>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
             placeholder="Your name"
             required
-            style={{ width: "100%", padding: 8 }}
           />
-        </div>
 
-        <div style={{ marginBottom: 8 }}>
           <input
             name="email"
             value={form.email}
@@ -63,21 +67,15 @@ export default function Support() {
             placeholder="Your email"
             type="email"
             required
-            style={{ width: "100%", padding: 8 }}
           />
-        </div>
 
-        <div style={{ marginBottom: 8 }}>
           <input
             name="orderId"
             value={form.orderId}
             onChange={handleChange}
             placeholder="Order ID (optional)"
-            style={{ width: "100%", padding: 8 }}
           />
-        </div>
 
-        <div style={{ marginBottom: 8 }}>
           <textarea
             name="message"
             value={form.message}
@@ -85,40 +83,29 @@ export default function Support() {
             placeholder="Describe your issue"
             required
             rows={6}
-            style={{ width: "100%", padding: 8 }}
           />
-        </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
           <button type="submit" disabled={loading}>
             {loading ? "Submitting..." : "Submit Ticket"}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setForm({ name: "", email: "", orderId: "", message: "" });
-              setError(null);
-              setTicket(null);
-            }}
-          >
-            Reset
-          </button>
-        </div>
-      </form>
+        </form>
 
-      {ticket && (
-        <div style={{ marginTop: 16, padding: 12, border: "1px solid #4caf50", borderRadius: 6 }}>
-          <strong>Success!</strong>
-          <div>Your Ticket ID: <code>{ticket}</code></div>
-          <div>We will update the ticket in Jira — you can quote the ticket ID when contacting us.</div>
-        </div>
-      )}
+        {ticket && (
+          <div className="success-box">
+            <strong>Success!</strong>
+            <div>
+              Your Ticket ID: <code>{ticket}</code>
+            </div>
+          </div>
+        )}
 
-      {error && (
-        <div style={{ marginTop: 16, padding: 12, border: "1px solid #ff5252", borderRadius: 6 }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-    </div>
+        {error && (
+          <div className="error-box">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
+
