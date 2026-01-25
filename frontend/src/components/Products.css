@@ -1,10 +1,17 @@
+.with-navbar {
+  padding-top: 90px;   /* navbar height + spacing */
+}
+
 .products-page {
   text-align: center;
-  padding: 40px;
+  padding: 40px 40px 40px;
   background: linear-gradient(to bottom right, #f8f9fa, #e3f2fd);
   min-height: 100vh;
 }
 
+.with-navbar {
+  padding-top: 80px;        /* EXACT navbar height */
+}
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
