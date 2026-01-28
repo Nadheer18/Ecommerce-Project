@@ -1,0 +1,25 @@
+---
+- name: Prepare all nodes (common)
+  hosts: all
+  become: yes
+  roles:
+    - common
+
+- name: Initialize Kubernetes master
+  hosts: master
+  become: yes
+  roles:
+    - master
+
+- name: Join worker nodes
+  hosts: workers
+  become: yes
+  roles:
+    - worker
+
+- name: "Post-setup on master: CNI, MetalLB, Ingress"
+  hosts: master
+  become: yes
+  roles:
+    - postmaster
+

@@ -1,0 +1,5 @@
+- name: Apply Kubernetes namespace
+  hosts: master
+  become: yes
+  roles:
+    - k8s

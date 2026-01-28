@@ -1,0 +1,6 @@
+---
+pod_network_cidr: "10.244.0.0/16"   # Flannel default
+metallb_ip_pool: "10.0.1.200-10.0.1.205"
+metallb_namespace: "metallb-system"
+ingress_namespace: "ingress-nginx"
+

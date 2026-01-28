@@ -1,0 +1,33 @@
+---
+- name: Ensure git is installed
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+
+- name: Clone Ecommerce Kubernetes repo
+  git:
+    repo: https://github.com/Nadheer18/Ecommerce-Project.git
+    dest: /opt/Ecommerce-Project
+    version: master
+    force: yes
+
+- name: Apply Kubernetes namespace
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl apply -f /opt/Ecommerce-Project/k8s/namespace.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/frontend-deployment.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/frontend-service.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/backend-deployment.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/backend-service.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/mysql-deployment.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/mysql-service.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/ingress.yaml
+    kubectl apply -f /opt/Ecommerce-Project/k8s/ecom-backend-secret.yaml
+  args:
+    executable: /bin/bash
+  register: namespace_apply
+
+- name: Show namespace apply result
+  debug:
+    var: namespace_apply.stdout_lines

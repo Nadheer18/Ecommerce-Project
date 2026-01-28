@@ -1,0 +1,140 @@
+---
+# Install MetalLB (idempotent)
+- name: Ensure metallb namespace exists (install if absent)
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl get ns {{ metallb_namespace }} || \
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+  args:
+    executable: /bin/bash
+
+# Wait for MetalLB pods to be ready
+- name: Wait for metallb pods ready
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl -n {{ metallb_namespace }} wait --for=condition=Ready pod --all --timeout=180s || true
+  args:
+    executable: /bin/bash
+
+# Create MetalLB IP Pool manifest
+- name: Create MetalLB IPAddressPool manifest
+  copy:
+    dest: /tmp/metallb-ip-pool.yaml
+    content: |
+      apiVersion: metallb.io/v1beta1
+      kind: IPAddressPool
+      metadata:
+        name: public-ip-pool
+        namespace: {{ metallb_namespace }}
+      spec:
+        addresses:
+          - {{ metallb_ip_pool }}
+
+# Create MetalLB L2Advertisement manifest
+- name: Create MetalLB L2Advertisement manifest
+  copy:
+    dest: /tmp/metallb-l2.yaml
+    content: |
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: l2-advertisement
+        namespace: {{ metallb_namespace }}
+      spec:
+        ipAddressPools:
+          - public-ip-pool
+
+# Apply MetalLB configuration
+- name: Apply MetalLB manifests
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl apply -f /tmp/metallb-ip-pool.yaml
+    kubectl apply -f /tmp/metallb-l2.yaml
+  args:
+    executable: /bin/bash
+
+# Install Ingress-NGINX
+- name: Install Ingress-NGINX
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+  args:
+    executable: /bin/bash
+
+# Wait until Ingress controller pods are ready
+- name: Wait for ingress controller ready
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl -n {{ ingress_namespace }} wait --for=condition=Ready pod --all --timeout=180s || true
+  args:
+    executable: /bin/bash
+
+# Show nodes
+- name: Show cluster nodes
+  shell: |
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl get nodes -o wide
+  args:
+    executable: /bin/bash
+  register: nodes_output
+
+# Print nodes output
+- name: Print node status
+  debug:
+    var: nodes_output.stdout_lines
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+# NGINX installation
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+
+# Create NGINX config file
+- name: Configure NGINX reverse proxy for ecommerce
+  copy:
+    dest: /etc/nginx/sites-available/ecommerce
+    content: |
+      upstream ecommerce_backend {
+          server 10.0.1.200:80;
+      }
+
+      server {
+          listen 80;
+          server_name nadheerkv.in www.nadheerkv.in;
+
+          location / {
+              proxy_pass http://ecommerce_backend;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+      }
+
+# Enable site & disable default
+- name: Enable ecommerce NGINX site
+  file:
+    src: /etc/nginx/sites-available/ecommerce
+    dest: /etc/nginx/sites-enabled/ecommerce
+    state: link
+
+- name: Remove default NGINX site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+# Test & restart NGINX
+- name: Test NGINX configuration
+  command: nginx -t
+  register: nginx_test
+  changed_when: false
+
+- name: Restart NGINX
+  service:
+    name: nginx
+    state: restarted
+
