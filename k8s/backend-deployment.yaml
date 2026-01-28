@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: nadheer/ecommerce-backend:v1.1
+        image: nadheer/ecommerce-backend:v1.3.0
         ports:
         - containerPort: 3000
         envFrom:

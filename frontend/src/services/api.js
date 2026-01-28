@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://ecommerce.local";
+const API_BASE_URL = "";
 
 export async function fetchProducts() {
   const response = await fetch(`${API_BASE_URL}/api/products`);

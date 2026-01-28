@@ -14,7 +14,7 @@ function Admin() {
   // ============================
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://ecommerce.local/api/products");
+      const res = await fetch("/api/products");
       const data = await res.json();
       setProducts(data);
     } catch (err) {
@@ -27,7 +27,7 @@ function Admin() {
   // ============================
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://ecommerce.local/api/auth/users");
+      const res = await fetch("/api/auth/users");
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -48,7 +48,7 @@ function Admin() {
       const formData = new FormData();
       formData.append("image", image);
 
-      const uploadRes = await fetch("http://ecommerce.local/api/products/upload", {
+      const uploadRes = await fetch("/api/products/upload", {
         method: "POST",
         body: formData,
       });
@@ -57,7 +57,7 @@ function Admin() {
       const imageUrl = uploadData.url; // returned as "/uploads/file.jpg"
 
       // STEP 2 → Save Product
-      await fetch("http://ecommerce.local/api/products", {
+      await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, price, image: imageUrl }),
@@ -83,7 +83,7 @@ function Admin() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      await fetch(`http://ecommerce.local/api/products/${id}`, {
+      await fetch(`/api/products/${id}`, {
         method: "DELETE",
       });
 
@@ -102,7 +102,7 @@ function Admin() {
     if (!window.confirm(`Delete user "${userToDelete}"?`)) return;
 
     try {
-      await fetch(`http://ecommerce.local/api/auth/delete/${userToDelete}`, {
+      await fetch(`/api/auth/delete/${userToDelete}`, {
         method: "DELETE",
       });
 
@@ -184,7 +184,7 @@ function Admin() {
                 <td>{p.id}</td>
                 <td>
                   <img
-                    src={"http://ecommerce.local" + p.image}
+                    src={"" + p.image}
                     alt={p.name}
                     width="80"
                     height="80"

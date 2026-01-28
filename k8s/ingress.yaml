@@ -8,19 +8,46 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: ecommerce.local
+  - host: nadheerkv.in
     http:
       paths:
-      - path: /api/(.*)
-        pathType: ImplementationSpecific
+      - path: /api
+        pathType: Prefix
         backend:
           service:
             name: backend
             port:
               number: 3000
 
-      - path: /uploads/(.*)
-        pathType: ImplementationSpecific
+      - path: /uploads
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3000
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+
+  - host: www.nadheerkv.in
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3000
+
+      - path: /uploads
+        pathType: Prefix
         backend:
           service:
             name: backend

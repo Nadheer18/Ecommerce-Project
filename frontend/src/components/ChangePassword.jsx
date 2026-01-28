@@ -22,7 +22,7 @@ function ChangePassword() {
 
   const handleChangePassword = async () => {
     try {
-      const res = await fetch("http://ecommerce.local/api/auth/change-password", {
+      const res = await fetch("/api/auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, currentPassword, newPassword }),
