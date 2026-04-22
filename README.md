@@ -255,7 +255,7 @@ upstream ecommerce_backend {
 
 server {
     listen 80;
-    server_name ecommerce.local;
+    server_name nadheerkv.in www.nadheerkv.in;
 
     location / {
         proxy_pass http://ecommerce_backend;
