@@ -8,7 +8,7 @@ kubectl get nodes
   NAME                             STATUS   ROLES    AGE    VERSION
 * ip-192-168-43-251.ec2.internal   Ready    <none>   151m   v1.34.7-eks-40737a8
 * ip-192-168-6-144.ec2.internal    Ready    <none>   151m   v1.34.7-eks-40737a8
-  # **🚀 STEP 2 — Install Helm**
+## **🚀 STEP 2 — Install Helm**
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
