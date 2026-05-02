@@ -42,7 +42,7 @@ kubectl get pods -n monitoring
 * grafana-xxxx
 * alertmanager-xxxx
 * node-exporter-xxxx
-  ## **🚀 STEP 7 — Access Grafana**
+## **🚀 STEP 7 — Access Grafana**
  ###### Get service:
  ```bash
 kubectl get svc -n monitoring
