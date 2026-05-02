@@ -1,4 +1,4 @@
- 🚀 **Kubernetes Monitoring Setup (Prometheus + Grafana + Alertmanager on EKS)**
+ # 🚀 **Kubernetes Monitoring Setup (Prometheus + Grafana + Alertmanager on EKS)**
 ### **📌 Overview**
 This project demonstrates how to set up a complete monitoring and alerting stack on a Kubernetes cluster using:
 * Prometheus — Metrics collection
