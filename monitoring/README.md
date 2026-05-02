@@ -1,13 +1,12 @@
-# 🚀 Kubernetes Monitoring Setup (Prometheus + Grafana + Alertmanager on EKS)
-### **📌 Overview**
+#### 🚀 Kubernetes Monitoring Setup (Prometheus + Grafana + Alertmanager on EKS)
+##### **📌 Overview**
 This project demonstrates how to set up a complete monitoring and alerting stack on a Kubernetes cluster using:
 * Prometheus — Metrics collection
 * Grafana — Visualization dashboards
 * Alertmanager — Alert routing & notifications
 The setup is deployed on an Amazon EKS cluster using Helm.
 ## 
-  
-## **🚀 STEP 1 — Verify cluster access**
+##### 🚀 STEP 1 — Verify cluster access
 
 Run EC2:
 ```bash
