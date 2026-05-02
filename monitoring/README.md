@@ -5,7 +5,7 @@ This project demonstrates how to set up a complete monitoring and alerting stack
 * Grafana — Visualization dashboards
 * Alertmanager — Alert routing & notifications
 
-<ins>The setup is deployed on an Amazon EKS cluster using Helm.</ins>
+<u>The setup is deployed on an Amazon EKS cluster using Helm.</u>
   
 ## **🚀 STEP 1 — Verify cluster access**
 
