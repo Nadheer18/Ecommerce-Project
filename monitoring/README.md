@@ -64,6 +64,7 @@ type: ClusterIP
 type: NodePort
 ```
 Save and exit.
+
 Now get port:
  ```bash
 kubectl get svc monitoring-grafana -n monitoring
