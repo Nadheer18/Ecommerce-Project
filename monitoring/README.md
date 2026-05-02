@@ -6,60 +6,65 @@ This project demonstrates how to set up a complete monitoring and alerting stack
 * Alertmanager — Alert routing & notifications
 The setup is deployed on an Amazon EKS cluster using Helm.
 ## 
-##### 🚀 STEP 1 — Verify cluster access
+#### 🧰 Prerequisites
+* Kubernetes cluster (EKS)
+* kubectl configured
+* Helm installed
+* AWS Security Group configured (NodePort range open)
+## 🚀 Setup Monitoring Stack
+### ⚙️ 1. Verify Cluster Access
 
-Run EC2:
 ```bash
 kubectl get nodes
 ```
-###### 👉 You should see:
-  NAME                             STATUS   ROLES    AGE    VERSION
-* ip-192-168-43-251.ec2.internal   Ready    <none>   151m   v1.34.7-eks-40737a8
-* ip-192-168-6-144.ec2.internal    Ready    <none>   151m   v1.34.7-eks-40737a8
-## **🚀 STEP 2 — Install Helm**
+👉 Expected:
+```bash
+STATUS: Ready
+```
+### ⚙️ STEP 2 — Install Helm
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
-###### Verify:
+✔ Verify:
 ```bash
 helm version
 ```
-## **🚀 STEP 3 — Add Prometheus Helm repo**
+### ⚙️ STEP 3 — Add Prometheus Helm repo
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 ```
-## **🚀 STEP 4 — Create namespace**
+### ⚙️ STEP 4 — Create namespace
 ```bash
 kubectl create namespace monitoring
 ```
-## **🚀 STEP 5 — Install Prometheus + Grafana (IMPORTANT)**
+### ⚙️ STEP 5 — Install Prometheus + Grafana
 We install kube-prometheus-stack (this includes everything).
 ```bash
 helm install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring
 ```
 ⏳ Wait 2–3 minutes
-## **🚀 STEP 6 — Check pods**
+### 🔍 STEP 6 — Verify Deployment/pods
 ```bash
 kubectl get pods -n monitoring
 ```
-###### You should see pods like:
-
+👉 Expected:
 * prometheus-xxxx
 * grafana-xxxx
 * alertmanager-xxxx
 * node-exporter-xxxx
-## **🚀 STEP 7 — Access Grafana**
- ###### Get service:
+## 🌐 Access Grafana Dashboard
+### STEP 7 — Expose Grafana (NodePort)
+Get service:
  ```bash
 kubectl get svc -n monitoring
 ```
-Find:
+👉 You should see:
  ```bash
 monitoring-grafana   ClusterIP
 ```
- OPTION A (easy for now — NodePort)
+ #### Expose via NodePort
  ```bash
 kubectl edit svc monitoring-grafana -n monitoring
 ```
@@ -81,40 +86,41 @@ Example:
  ```bash
 NodePort: 32000
  ```
-Open in browser:
+#### 🌍 Open in Browser
  ```bash
 http://<WorkerNodeIP>:<NodePort>
  ```
-###### Get WorkerNodeIP
+##### Get WorkerNodeIP
 ```bash
 kubectl describe po  monitoring-grafana-**********-***** -n monitoring |grep Node
 ```
-###### 👉 You should see:
+##### 👉 You should see:
+```bash
 Node:             ip-192-168-6-144.ec2.internal/192.168.6.144
-
+```
 fint this node name public ip
-### **⚠️ If Page Not Opening**
+#### **⚠️ If Page Not Opening**
 Check:
-#### 1. Security Group (VERY IMPORTANT)
+##### 1. Security Group (VERY IMPORTANT)
 Allow:
 * Port 30000–32767 (NodePort range)
-#### 2. Node IP
+##### 2. Node IP
 Make sure you use:
 * Worker node public IP
 
-## **🔐 STEP 8 — Get Grafana password**
+### **🔐 STEP 8 — Get Grafana password**
  ```bash
 kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
  ```
 👉 Username: admin
 
 👉 Password: (from command)
-### **📊 What you will see**
+#### 📊 What you will see
 **👉 Dashboards already pre-installed:**
 * Node metrics
 * Pod metrics
 * Cluster usage
-### **⚠️ Common Issues (quick fix)**
+#### **⚠️ Common Issues (quick fix)**
 ❌ Pods not starting?
  ```bash
 kubectl describe pod <pod-name> -n monitoring
@@ -123,25 +129,25 @@ kubectl describe pod <pod-name> -n monitoring
 
 Wait 2–5 minutes (Prometheus needs time)
 
-## **✅ Final Status**
+## ✅ Final Status
 
 * ✔ Monitoring installed
 * ✔ Pods running
 * ✔ Ready for dashboard
-
-### **🧠 What you’ve achieved**
+##
+#### 📊 Monitoring Overview
 ***You now have:***
 * Prometheus collecting metrics → detects problems
 * Alertmanager (already installed) → sends alerts
 * Grafana visualizing data → optional alert UI
 * Full Kubernetes monitoring on your EKS cluster
-### **🧠 How alerting works (simple)**
+#### 🧠 How alerting works (simple)
 * Prometheus checks metrics
 * Rule triggers (CPU high, pod down)
-* Alertmanager sends notification (email, Slack, etc.)
-
-## **setup alerts**
-### **🚀 STEP 1 — Create Alert Rule (CPU High)**
+* Alertmanager handles alerts, sends notification (email, Slack, etc.)
+##
+## setup alerts
+### 🚨 STEP 8 — Create Alert Rule (CPU High Example)
 ```bash
 kubectl apply -f - <<EOF
 apiVersion: monitoring.coreos.com/v1
@@ -163,15 +169,15 @@ spec:
         description: "Pod CPU usage is above threshold"
 EOF
 ```
-### ***🔍 Verify rule***
+#### 🔍 Verify Alert Rule
 ```bash
 kubectl get prometheusrule -n monitoring
 ```
-### **🚀 STEP 2 — Configure Alertmanager (Email)**
-#### **STEP 1 — Create Alertmanager config file**
+##
+## 📧 Configure Email Alerts
+### 🔹 STEP 9 — Create Alertmanager Config
 Now we tell Alertmanager where to send alerts
 
-On your server:
 ```bash
 vi alertmanager.yaml
 ```
@@ -193,20 +199,18 @@ receivers:
     auth_password: your-app-password
     require_tls: true
 ```
-🔐 IMPORTANT (Gmail)
-
-### ***👉 You MUST use:***
+##### 👉 You MUST use:
 
 * Gmail App Password
 
   NOT normal password
-#### **🚀 STEP 2 — Create Kubernetes secret**
+### 🔹 STEP 10 — Create Secret
 ```bash
 kubectl create secret generic alertmanager-config \
   --from-file=alertmanager.yaml \
   -n monitoring
 ```
-#### **🚀 STEP 3 — Update Alertmanager to use this config**
+### 🔹 STEP 11 — Attach Config to Alertmanager
 Run:
 ```bash
 kubectl edit alertmanager monitoring-kube-prometheus-alertmanager -n monitoring
@@ -219,7 +223,7 @@ Change to:
 ```YAML
 configSecret: alertmanager-config
 ```
-##### ***🧠 Where exactly to add it***
+#### 🧠 Where exactly to add it
 ```bash
 spec:
   affinity:
@@ -229,14 +233,14 @@ spec:
 ```
 👉 You will add it just below these lines
 
-***✅ Final edited section should look like this:***
+**✅ Final edited section should look like this:**
 ```bash
 spec:
   alertmanagerConfigNamespaceSelector: {}
   alertmanagerConfigSelector: {}
   configSecret: alertmanager-config
 ```
-##### ***⚠️ Important (very important)***
+#### ⚠️ Important (very important)
 👉 Do NOT put it:
 
 * inside metadata ❌
@@ -246,13 +250,13 @@ spec:
 ```YAML
 spec:
 ```
-##### ***🚀 After adding***
+#####  After adding
 Save and exit editor
-### **🚀 STEP 3 — Restart Alertmanager**
+### 🔹 STEP 12 — Restart Alertmanager
 ```bash
 kubectl delete pod -l alertmanager=monitoring-kube-prometheus-alertmanager -n monitoring
 ```
-### **🔍 STEP 4 — Check logs**
+### 🔍 STEP 13 — Check logs
 ```bash
 kubectl logs -n monitoring -l alertmanager=monitoring-kube-prometheus-alertmanager
 ```
@@ -260,16 +264,16 @@ kubectl logs -n monitoring -l alertmanager=monitoring-kube-prometheus-alertmanag
 ```bash
 Loading configuration file
 ```
-### **🚀 STEP 5 — Trigger alert**
+### 🧪 STEP 14 — Trigger alert
 Crash pod again:
 ```bash
 kubectl exec -it <your-pod> -n <namespace> -- kill 1
 ```
 Wait 1–2 minutes
-### **🔍 Check alerts in Grafana**
+### 🔍 Check alerts in Grafana
 Go to:
 👉 Grafana → Alerting → Alert rules
-### **🔍 Check alerts in Prometheus UI**
+### 🔍 Check alerts in Prometheus UI
 Run:
 ```bash
 kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090 -n monitoring
@@ -278,12 +282,12 @@ Open:
 ```bash
 http://localhost:9090
 ```
-if we want open our personal laptop?
+### 💻 Access from Laptop
 Open cmd :
 ```bash
 ssh -i your-key.pem ubuntu@<EC2-PUBLIC-IP> -L 9090:localhost:9090
 ```
-### **🔍 Check alerts in Alertmanager UI**
+### 🚨 Check alerts in Alertmanager UI**
 Run:
 ```bash
 kubectl port-forward svc/alertmanager-operated 9093 -n monitoring
@@ -292,20 +296,33 @@ Open:
 ```bash
 http://localhost:9093
 ```
-### **📩 STEP  — Check email**
-* Inbox
-* Spam
-#### **⚠️ If email not coming**
+### 📩 Expected Output
+You will receive email alerts like:
+```bash
+[FIRING] HighCPUUsage / PodCrash / TargetDown
+```
+## ⚠️ Troubleshooting
+### ❌ If email not coming
 Check:
 **1. Wrong password ❌**
 👉 Use Gmail App Password
-**2.Logs error**
+**2.Logs error ❌**
 ```bash
 kubectl logs -n monitoring <alertmanager-pod>
 ```
 Look for:
 * smtp error
 * auth failed
+**2 Pods Not Running ❌**
+```bash
+kubectl describe pod <pod-name> -n monitoring
+```
+## ✅ Final Result
+
+* ✔ Monitoring installed
+* ✔ Grafana dashboard working
+* ✔ Alerts configured
+* ✔ Email notifications working
 
 
 
