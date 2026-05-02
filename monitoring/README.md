@@ -92,7 +92,7 @@ Allow:
 * Port 30000–32767 (NodePort range)
 #### 2. Node IP
 Make sure you use:
-*Worker node public IP
+* Worker node public IP
 
 ## **🔐 STEP 8 — Get Grafana password**
  ```bash
@@ -105,8 +105,8 @@ kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-pa
 * Node metrics
 * Pod metrics
 * Cluster usage
-  ### **⚠️ Common Issues (quick fix)**
-  ❌ Pods not starting?
+### **⚠️ Common Issues (quick fix)**
+❌ Pods not starting?
  ```bash
 kubectl describe pod <pod-name> -n monitoring
  ```
@@ -116,9 +116,9 @@ Wait 2–5 minutes (Prometheus needs time)
 
 ## **✅ Final Status**
 
-✔ Monitoring installed
-✔ Pods running
-✔ Ready for dashboard
+* ✔ Monitoring installed
+* ✔ Pods running
+* ✔ Ready for dashboard
 
 
 
