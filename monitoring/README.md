@@ -99,6 +99,7 @@ Make sure you use:
 kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
  ```
 👉 Username: admin
+
 👉 Password: (from command)
 ### **📊 What you will see**
 **👉 Dashboards already pre-installed:**
