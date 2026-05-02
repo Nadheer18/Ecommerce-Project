@@ -83,6 +83,7 @@ kubectl describe po  monitoring-grafana-**********-***** -n monitoring |grep Nod
 ```
 ###### 👉 You should see:
 Node:             ip-192-168-6-144.ec2.internal/192.168.6.144
+
 fint this node name public ip
 ### **⚠️ If Page Not Opening**
 Check:
