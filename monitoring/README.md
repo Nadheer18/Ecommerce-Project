@@ -1,6 +1,6 @@
 ## **🚀 STEP 1 — Verify cluster access**
 
-Run on master node (or Ansible server with kubectl configured):
+Run EC2:
 ```bash
 kubectl get nodes
 ```
@@ -121,11 +121,183 @@ Wait 2–5 minutes (Prometheus needs time)
 * ✔ Pods running
 * ✔ Ready for dashboard
 
+### **🧠 What you’ve achieved**
+***You now have:***
+* Prometheus collecting metrics → detects problems
+* Alertmanager (already installed) → sends alerts
+* Grafana visualizing data → optional alert UI
+* Full Kubernetes monitoring on your EKS cluster
+### **🧠 How alerting works (simple)**
+* Prometheus checks metrics
+* Rule triggers (CPU high, pod down)
+* Alertmanager sends notification (email, Slack, etc.)
 
+## **setup alerts**
+### **🚀 STEP 1 — Create Alert Rule (CPU High)**
+```bash
+kubectl apply -f - <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: high-cpu-alert
+  namespace: monitoring
+spec:
+  groups:
+  - name: cpu-alerts
+    rules:
+    - alert: HighCPUUsage
+      expr: sum(rate(container_cpu_usage_seconds_total{container!=""}[1m])) by (pod) > 0.5
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage detected"
+        description: "Pod CPU usage is above threshold"
+EOF
+```
+### ***🔍 Verify rule***
+```bash
+kubectl get prometheusrule -n monitoring
+```
+### **🚀 STEP 2 — Configure Alertmanager (Email)**
+#### **STEP 1 — Create Alertmanager config file**
+Now we tell Alertmanager where to send alerts
 
+On your server:
+```bash
+vi alertmanager.yaml
+```
+Paste this:
+```bash
+global:
+  resolve_timeout: 5m
 
+route:
+  receiver: email-alert
 
+receivers:
+- name: email-alert
+  email_configs:
+  - to: your-email@gmail.com
+    from: your-email@gmail.com
+    smarthost: smtp.gmail.com:587
+    auth_username: your-email@gmail.com
+    auth_password: your-app-password
+    require_tls: true
+```
+🔐 IMPORTANT (Gmail)
 
+### ***👉 You MUST use:***
+
+* Gmail App Password
+
+  NOT normal password
+#### **🚀 STEP 2 — Create Kubernetes secret**
+```bash
+kubectl create secret generic alertmanager-config \
+  --from-file=alertmanager.yaml \
+  -n monitoring
+```
+#### **🚀 STEP 3 — Update Alertmanager to use this config**
+Run:
+```bash
+kubectl edit alertmanager monitoring-kube-prometheus-alertmanager -n monitoring
+```
+Find:
+```YAML
+configSecret:
+```
+Change to:
+```YAML
+configSecret: alertmanager-config
+```
+##### ***🧠 Where exactly to add it***
+```bash
+spec:
+  affinity:
+  ...
+  alertmanagerConfigNamespaceSelector: {}
+  alertmanagerConfigSelector: {}
+```
+👉 You will add it just below these lines
+
+***✅ Final edited section should look like this:***
+```bash
+spec:
+  alertmanagerConfigNamespaceSelector: {}
+  alertmanagerConfigSelector: {}
+  configSecret: alertmanager-config
+```
+##### ***⚠️ Important (very important)***
+👉 Do NOT put it:
+
+* inside metadata ❌
+* inside status ❌
+
+👉 Only inside:
+```YAML
+spec:
+```
+##### ***🚀 After adding***
+Save and exit editor
+### **🚀 STEP 3 — Restart Alertmanager**
+```bash
+kubectl delete pod -l alertmanager=monitoring-kube-prometheus-alertmanager -n monitoring
+```
+### **🔍 STEP 4 — Check logs**
+```bash
+kubectl logs -n monitoring -l alertmanager=monitoring-kube-prometheus-alertmanager
+```
+****👉 You should see:****
+```bash
+Loading configuration file
+```
+### **🚀 STEP 5 — Trigger alert**
+Crash pod again:
+```bash
+kubectl exec -it <your-pod> -n <namespace> -- kill 1
+```
+Wait 1–2 minutes
+### **🔍 Check alerts in Grafana**
+Go to:
+👉 Grafana → Alerting → Alert rules
+### **🔍 Check alerts in Prometheus UI**
+Run:
+```bash
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090 -n monitoring
+```
+Open:
+```bash
+http://localhost:9090
+```
+if we want open our personal laptop?
+Open cmd :
+```bash
+ssh -i your-key.pem ubuntu@<EC2-PUBLIC-IP> -L 9090:localhost:9090
+```
+### **🔍 Check alerts in Alertmanager UI**
+Run:
+```bash
+kubectl port-forward svc/alertmanager-operated 9093 -n monitoring
+```
+Open:
+```bash
+http://localhost:9093
+```
+### **📩 STEP  — Check email**
+* Inbox
+* Spam
+#### **⚠️ If email not coming**
+Check:
+**1. Wrong password ❌**
+👉 Use Gmail App Password
+**2.Logs error**
+```bash
+kubectl logs -n monitoring <alertmanager-pod>
+```
+Look for:
+* smtp error
+* auth failed
 
 
 
