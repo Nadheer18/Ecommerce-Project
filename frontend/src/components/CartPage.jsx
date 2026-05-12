@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api";
-import Navbar from "./Navbar";
 import "./CartPage.css";
 
 export default function CartPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const username = localStorage.getItem("username") || "Customer";
 
   const load = async () => {
     setLoading(true);
@@ -53,89 +54,126 @@ export default function CartPage() {
     }
   };
 
-  const total = items.reduce(
-    (sum, it) => sum + it.quantity * (it.product?.price || 0),
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.quantity * Number(item.product?.price || 0),
     0
   );
+  const delivery = subtotal > 0 && subtotal < 999 ? 79 : 0;
+  const discount = subtotal >= 999 ? Math.round(subtotal * 0.1) : 0;
+  const total = Math.max(subtotal + delivery - discount, 0);
 
   return (
-    <>
-      <Navbar />
+    <main className="cart-page">
+      <div className="cart-deal-bar">
+        <span>Free delivery above Rs.999</span>
+        <span>Secure checkout</span>
+      </div>
 
-      <div className="cart-container page-content">
-        <h2>🛒 Your Cart</h2>
+      <header className="cart-header">
+        <Link to="/" className="cart-logo">FLOWMART</Link>
+        <nav>
+          <Link to="/">Continue Shopping</Link>
+          <span>Hi, {username}</span>
+        </nav>
+      </header>
 
-        {loading && <p>Loading...</p>}
-        {!loading && !items.length && <p>Your cart is empty</p>}
+      <section className="cart-layout">
+        <div className="cart-main">
+          <div className="cart-title-row">
+            <div>
+              <p className="cart-label">Shopping Cart</p>
+              <h1>Your Cart</h1>
+            </div>
+            <span>{items.length} items</span>
+          </div>
 
-        {!loading && items.length > 0 && (
-          <>
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Price</th>
-                  <th>Qty</th>
-                  <th>Subtotal</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((it) => (
-                  <tr key={it.id}>
-                    <td className="product-cell">
-                      <img
-                        src={it.product?.image}
-                        alt={it.product?.name}
-                      />
-                      <span>{it.product?.name}</span>
-                    </td>
-                    <td>₹{it.product?.price}</td>
-                    <td>
+          {loading && <div className="cart-state">Loading cart...</div>}
+
+          {!loading && !items.length && (
+            <div className="cart-empty">
+              <h2>Your cart is empty</h2>
+              <p>Add products from the storefront to start your order.</p>
+              <Link to="/">Shop Products</Link>
+            </div>
+          )}
+
+          {!loading && items.length > 0 && (
+            <div className="cart-items">
+              {items.map((item) => {
+                const price = Number(item.product?.price || 0);
+                const subtotalLine = price * item.quantity;
+
+                return (
+                  <article className="cart-item" key={item.id}>
+                    <img
+                      src={item.product?.image || "https://via.placeholder.com/120"}
+                      alt={item.product?.name || "Product"}
+                    />
+
+                    <div className="cart-item-details">
+                      <p>{item.product?.name || "Product unavailable"}</p>
+                      <span>Rs.{price.toFixed(2)}</span>
+                    </div>
+
+                    <div className="quantity-control" aria-label="Quantity controls">
                       <button
-                        onClick={() => updateQty(it.id, it.quantity - 1)}
-                        disabled={it.quantity <= 1}
+                        onClick={() => updateQty(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
                       >
                         -
                       </button>
-                      <span className="qty">{it.quantity}</span>
-                      <button
-                        onClick={() => updateQty(it.id, it.quantity + 1)}
-                      >
+                      <strong>{item.quantity}</strong>
+                      <button onClick={() => updateQty(item.id, item.quantity + 1)}>
                         +
                       </button>
-                    </td>
-                    <td>
-                      ₹{(it.quantity * (it.product?.price || 0)).toFixed(2)}
-                    </td>
-                    <td>
-                      <button
-                        className="remove-btn"
-                        onClick={() => removeItem(it.id)}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
 
-            <div className="cart-total">
-              <h3>Total: ₹{total.toFixed(2)}</h3>
-              <button
-                className="checkout-btn"
-                onClick={() =>
-                  alert("Checkout flow will be added next")
-                }
-              >
-                Checkout
-              </button>
+                    <strong className="line-total">Rs.{subtotalLine.toFixed(2)}</strong>
+
+                    <button className="remove-btn" onClick={() => removeItem(item.id)}>
+                      Remove
+                    </button>
+                  </article>
+                );
+              })}
             </div>
-          </>
-        )}
-      </div>
-    </>
+          )}
+        </div>
+
+        <aside className="order-summary">
+          <p className="cart-label">Order Summary</p>
+          <h2>Checkout Details</h2>
+
+          <div className="summary-row">
+            <span>Subtotal</span>
+            <strong>Rs.{subtotal.toFixed(2)}</strong>
+          </div>
+          <div className="summary-row">
+            <span>Delivery</span>
+            <strong>{delivery === 0 ? "Free" : `Rs.${delivery.toFixed(2)}`}</strong>
+          </div>
+          <div className="summary-row">
+            <span>Offer Discount</span>
+            <strong>- Rs.{discount.toFixed(2)}</strong>
+          </div>
+          <div className="summary-total">
+            <span>Total</span>
+            <strong>Rs.{total.toFixed(2)}</strong>
+          </div>
+
+          <button
+            className="checkout-btn"
+            disabled={!items.length}
+            onClick={() => alert("Checkout flow will be added next")}
+          >
+            Checkout
+          </button>
+
+          <p className="summary-note">
+            Orders above Rs.999 get free delivery and FLOW10 savings.
+          </p>
+        </aside>
+      </section>
+    </main>
   );
 }
-
