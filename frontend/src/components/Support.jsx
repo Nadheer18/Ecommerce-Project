@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import Navbar from "./Navbar";        // ✅ ADD THIS
+import { Link } from "react-router-dom";
 import { createSupportTicket } from "../services/api";
 import "./Support.css";
+
+const helpTopics = [
+  "Order status",
+  "Payment issue",
+  "Return request",
+  "Product question"
+];
 
 export default function Support() {
   const [form, setForm] = useState({
@@ -16,6 +23,13 @@ export default function Support() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const useTopic = (topic) => {
+    setForm((current) => ({
+      ...current,
+      message: current.message || `${topic}: `
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -40,72 +54,126 @@ export default function Support() {
   };
 
   return (
-    <>
-      {/* ✅ NAVBAR */}
-      <Navbar />
+    <main className="support-page">
+      <div className="support-deal-bar">
+        <span>Need help with an order?</span>
+        <span>Raise a ticket and track support faster</span>
+      </div>
 
-      <div className="support-container">
-        <h2>Customer Support</h2>
-        <p>
-          If you have an issue with an order, raise a ticket here — you will get a
-          ticket ID.
-        </p>
+      <header className="support-header">
+        <Link to="/" className="support-logo">FLOWMART</Link>
+        <nav>
+          <Link to="/">Storefront</Link>
+          <Link to="/contact">Contact</Link>
+          <Link to="/login">Login</Link>
+        </nav>
+      </header>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Your name"
-            required
-          />
+      <section className="support-hero">
+        <div>
+          <p className="section-label">Support Center</p>
+          <h1>Tell us what happened. We will help you resolve it.</h1>
+          <p>
+            Create a support ticket for delivery, cart, payment, return, or product
+            issues. Add your order ID when available for faster handling.
+          </p>
+        </div>
+        <div className="support-stats">
+          <div>
+            <strong>24h</strong>
+            <span>Typical response</span>
+          </div>
+          <div>
+            <strong>4</strong>
+            <span>Common help topics</span>
+          </div>
+        </div>
+      </section>
 
-          <input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Your email"
-            type="email"
-            required
-          />
+      <section className="support-layout">
+        <aside className="help-topics">
+          <p className="section-label">Quick Topics</p>
+          <h2>What do you need help with?</h2>
+          <div>
+            {helpTopics.map((topic) => (
+              <button key={topic} type="button" onClick={() => useTopic(topic)}>
+                {topic}
+              </button>
+            ))}
+          </div>
+        </aside>
 
-          <input
-            name="orderId"
-            value={form.orderId}
-            onChange={handleChange}
-            placeholder="Order ID (optional)"
-          />
+        <form className="support-form" onSubmit={handleSubmit}>
+          <div className="form-heading">
+            <p className="section-label">Create Ticket</p>
+            <h2>Support request</h2>
+          </div>
 
-          <textarea
-            name="message"
-            value={form.message}
-            onChange={handleChange}
-            placeholder="Describe your issue"
-            required
-            rows={6}
-          />
+          <div className="support-form-grid">
+            <label>
+              <span>Name</span>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+              />
+            </label>
+            <label>
+              <span>Email</span>
+              <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Your email"
+                type="email"
+                required
+              />
+            </label>
+          </div>
+
+          <label>
+            <span>Order ID</span>
+            <input
+              name="orderId"
+              value={form.orderId}
+              onChange={handleChange}
+              placeholder="Optional"
+            />
+          </label>
+
+          <label>
+            <span>Message</span>
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Describe your issue"
+              required
+              rows={7}
+            />
+          </label>
 
           <button type="submit" disabled={loading}>
             {loading ? "Submitting..." : "Submit Ticket"}
           </button>
-        </form>
 
-        {ticket && (
-          <div className="success-box">
-            <strong>Success!</strong>
-            <div>
-              Your Ticket ID: <code>{ticket}</code>
+          {ticket && (
+            <div className="support-message success">
+              <strong>Ticket created.</strong>
+              <span>Your Ticket ID: {ticket}</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="error-box">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-      </div>
-    </>
+          {error && (
+            <div className="support-message error">
+              <strong>Error:</strong>
+              <span>{typeof error === "string" ? error : "Unable to create ticket."}</span>
+            </div>
+          )}
+        </form>
+      </section>
+    </main>
   );
 }
-
