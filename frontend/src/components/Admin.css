@@ -30,6 +30,23 @@
   background: #e63939;
 }
 
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  margin-left: 10px;
+  padding: 0 14px;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #004aad;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-link:hover {
+  background: #eaf2ff;
+}
+
 .add-product-form {
   background: white;
   padding: 20px;

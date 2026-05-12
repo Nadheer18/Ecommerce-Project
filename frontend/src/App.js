@@ -7,6 +7,7 @@ import Products from "./components/Products";
 import Contact from "./components/Contact";
 import ChangePassword from "./components/ChangePassword";
 import Admin from "./components/Admin";
+import AdminProducts from "./components/AdminProducts";
 import AdminLogin from "./components/AdminLogin";
 import Register from "./components/Register";
 import Support from "./components/Support";
@@ -36,6 +37,10 @@ function App() {
         <Route
           path="/admin"
           element={isAdmin ? <Admin /> : <Navigate to="/admin-login" />}
+        />
+        <Route
+          path="/admin/products"
+          element={isAdmin ? <AdminProducts /> : <Navigate to="/admin-login" />}
         />
       </Routes>
     </Router>

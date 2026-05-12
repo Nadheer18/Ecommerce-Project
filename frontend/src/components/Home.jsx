@@ -1,110 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api";
-import speakerImg from "../assets/images/speaker.jpg";
-import smartwatchImg from "../assets/images/smartwatch.jpg";
-import mouseImg from "../assets/images/mouse.jpg";
-import headphonesImg from "../assets/images/headphones.jpg";
 import "./Home.css";
-
-const fallbackProducts = [
-  {
-    id: "demo-1",
-    name: "Wireless Premium Headphones",
-    category: "Electronics",
-    price: 1299,
-    oldPrice: 2499,
-    image: headphonesImg,
-    badge: "Bestseller",
-    discount: "48% OFF",
-    rating: 4.8,
-    reviews: "1.3K"
-  },
-  {
-    id: "demo-2",
-    name: "Smart Fitness Watch",
-    category: "Wearables",
-    price: 1549,
-    oldPrice: 2999,
-    image: smartwatchImg,
-    badge: "Bestseller",
-    discount: "46% OFF",
-    rating: 4.7,
-    reviews: "1.6K"
-  },
-  {
-    id: "demo-3",
-    name: "Portable Bluetooth Speaker",
-    category: "Audio",
-    price: 799,
-    oldPrice: 1499,
-    image: speakerImg,
-    badge: "Sale",
-    discount: "47% OFF",
-    rating: 4.6,
-    reviews: "856"
-  },
-  {
-    id: "demo-4",
-    name: "Ergonomic Wireless Mouse",
-    category: "Accessories",
-    price: 449,
-    oldPrice: 899,
-    image: mouseImg,
-    badge: "New",
-    discount: "50% OFF",
-    rating: 4.5,
-    reviews: "1.1K"
-  },
-  {
-    id: "demo-5",
-    name: "Noise Cancelling Audio Set",
-    category: "Audio",
-    price: 999,
-    oldPrice: 1899,
-    image: headphonesImg,
-    badge: "Bestseller",
-    discount: "47% OFF",
-    rating: 4.8,
-    reviews: "998"
-  },
-  {
-    id: "demo-6",
-    name: "Gold Edition Smart Watch",
-    category: "Wearables",
-    price: 2099,
-    oldPrice: 3499,
-    image: smartwatchImg,
-    badge: "Limited",
-    discount: "40% OFF",
-    rating: 4.9,
-    reviews: "2.2K"
-  },
-  {
-    id: "demo-7",
-    name: "Compact Work Desk Mouse",
-    category: "Accessories",
-    price: 349,
-    oldPrice: 699,
-    image: mouseImg,
-    badge: "Sale",
-    discount: "50% OFF",
-    rating: 4.6,
-    reviews: "645"
-  },
-  {
-    id: "demo-8",
-    name: "Mini Travel Speaker",
-    category: "Electronics",
-    price: 649,
-    oldPrice: 1199,
-    image: speakerImg,
-    badge: "New",
-    discount: "45% OFF",
-    rating: 4.4,
-    reviews: "521"
-  }
-];
 
 const categories = [
   { label: "Crazy Deals", value: "all" },
@@ -156,8 +53,7 @@ function Home() {
   }, []);
 
   const displayedProducts = useMemo(() => {
-    const source = products.length ? products : fallbackProducts;
-    const searched = source.filter((product) => {
+    const searched = products.filter((product) => {
       const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
         selectedCategory === "all" ||
@@ -208,11 +104,6 @@ function Home() {
   const addToCart = async (product) => {
     if (!isLoggedIn) {
       requireLogin();
-      return;
-    }
-
-    if (String(product.id).startsWith("demo-")) {
-      alert("Demo product preview. Real products can be added after backend products are connected.");
       return;
     }
 
@@ -357,8 +248,10 @@ function Home() {
         {isLoading ? (
           <div className="store-status">Loading products...</div>
         ) : displayedProducts.length === 0 ? (
-          <div className="store-status">
-            No products found. Try another category or search term.
+          <div className="store-status empty-store">
+            <h2>No products available</h2>
+            <p>Add products from the admin product page and they will appear here.</p>
+            <Link to="/admin/products">Go to product manager</Link>
           </div>
         ) : (
           <div className="store-product-grid">
