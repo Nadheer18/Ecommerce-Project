@@ -33,6 +33,7 @@ function App() {
 
         {/* NEW CART ROUTE */}
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/cart-preview" element={<CartPage preview />} />
 
         <Route
           path="/admin"

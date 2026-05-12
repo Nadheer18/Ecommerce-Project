@@ -3,9 +3,30 @@ import { Link } from "react-router-dom";
 import API from "../api";
 import "./CartPage.css";
 
-export default function CartPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+const previewItems = [
+  {
+    id: "preview-1",
+    quantity: 1,
+    product: {
+      name: "Wireless Premium Headphones",
+      price: 1299,
+      image: "https://images.pexels.com/photos/3394651/pexels-photo-3394651.jpeg?auto=compress&cs=tinysrgb&w=300"
+    }
+  },
+  {
+    id: "preview-2",
+    quantity: 2,
+    product: {
+      name: "Smart Fitness Watch",
+      price: 1549,
+      image: "https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg?auto=compress&cs=tinysrgb&w=300"
+    }
+  }
+];
+
+export default function CartPage({ preview = false }) {
+  const [items, setItems] = useState(preview ? previewItems : []);
+  const [loading, setLoading] = useState(!preview);
   const username = localStorage.getItem("username") || "Customer";
 
   const load = async () => {
@@ -22,6 +43,8 @@ export default function CartPage() {
   };
 
   useEffect(() => {
+    if (preview) return;
+
     const token = localStorage.getItem("token");
     if (!token) {
       localStorage.setItem("redirectAfterLogin", "/cart");
@@ -31,10 +54,18 @@ export default function CartPage() {
     }
 
     load();
-  }, []);
+  }, [preview]);
 
   const updateQty = async (id, qty) => {
     if (qty < 1) return;
+
+    if (preview) {
+      setItems((current) =>
+        current.map((item) => (item.id === id ? { ...item, quantity: qty } : item))
+      );
+      return;
+    }
+
     try {
       await API.put(`/cart/${id}`, { quantity: qty });
       await load();
@@ -45,6 +76,11 @@ export default function CartPage() {
   };
 
   const removeItem = async (id) => {
+    if (preview) {
+      setItems((current) => current.filter((item) => item.id !== id));
+      return;
+    }
+
     try {
       await API.delete(`/cart/${id}`);
       await load();
@@ -76,6 +112,12 @@ export default function CartPage() {
           <span>Hi, {username}</span>
         </nav>
       </header>
+
+      {preview && (
+        <div className="cart-preview-banner">
+          Preview mode. Real cart still requires login and backend products.
+        </div>
+      )}
 
       <section className="cart-layout">
         <div className="cart-main">
