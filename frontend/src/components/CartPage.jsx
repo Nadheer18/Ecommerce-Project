@@ -21,6 +21,14 @@ export default function CartPage() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      localStorage.setItem("redirectAfterLogin", "/cart");
+      alert("Please login or create an account to view your cart.");
+      window.location.href = "/login";
+      return;
+    }
+
     load();
   }, []);
 

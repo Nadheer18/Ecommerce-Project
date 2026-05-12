@@ -1,76 +1,101 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import API from "../api";
+import "./Auth.css";
 
 function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async () => {
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setMessageType("");
+
+    if (!username.trim() || !password.trim()) {
+      setMessage("Please choose a username and password.");
+      setMessageType("error");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await res.json();
-      alert(data.message);
+      const res = await API.post("/auth/register", { username, password });
+      setMessage(res.data.message || "Account created successfully. You can login now.");
+      setMessageType("success");
+      setUsername("");
+      setPassword("");
     } catch (err) {
-      alert("❌ Error: " + err.message);
+      setMessage(err.response?.data?.message || "Unable to create account. Please try again.");
+      setMessageType("error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Create Account</h2>
-      <input
-        type="text"
-        placeholder="Enter username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        style={styles.input}
-      />
-      <input
-        type="password"
-        placeholder="Enter password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={styles.input}
-      />
-      <button onClick={handleRegister} style={styles.button}>
-        Create Account
-      </button>
-      <p>
-        Already have an account?{" "}
-        <a href="/" style={styles.link}>
-          Login here
-        </a>
-      </p>
-    </div>
+    <main className="auth-page register-page">
+      <section className="auth-shell" aria-label="Create account">
+        <div className="auth-brand-panel">
+          <div className="brand-mark">E</div>
+          <p className="eyebrow">Join The Marketplace</p>
+          <h1>Create your shopping account in seconds.</h1>
+          <p className="brand-copy">
+            Save your details, browse featured collections, and keep your cart
+            ready whenever you come back.
+          </p>
+          <div className="auth-highlights">
+            <span>Easy setup</span>
+            <span>Personal cart</span>
+            <span>Fresh deals</span>
+          </div>
+        </div>
+
+        <form className="auth-card" onSubmit={handleRegister}>
+          <div className="auth-card-header">
+            <p className="eyebrow">Account Setup</p>
+            <h2>Create account</h2>
+            <p>Choose simple login details to get started.</p>
+          </div>
+
+          {message && <div className={`auth-message ${messageType}`}>{message}</div>}
+
+          <label className="auth-field">
+            <span>Username</span>
+            <input
+              type="text"
+              placeholder="Choose username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+            />
+          </label>
+
+          <label className="auth-field">
+            <span>Password</span>
+            <input
+              type="password"
+              placeholder="Create password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+          </label>
+
+          <button className="auth-submit" type="submit" disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create Account"}
+          </button>
+
+          <p className="auth-switch">
+            Already registered? <Link to="/login">Login here</Link>
+          </p>
+        </form>
+      </section>
+    </main>
   );
 }
 
-const styles = {
-  container: {
-    textAlign: "center",
-    marginTop: "100px",
-  },
-  input: {
-    display: "block",
-    margin: "10px auto",
-    padding: "10px",
-    width: "250px",
-  },
-  button: {
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    padding: "10px 20px",
-    cursor: "pointer",
-  },
-  link: {
-    color: "#007bff",
-    textDecoration: "none",
-  },
-};
-
 export default Register;
-
