@@ -12,6 +12,20 @@
 * 9.Connect GitHub Repository
 * 10.Build CI/CD Pipeline
 
+### 📌 Architecture
+```
+GitHub
+   ↓
+Jenkins
+   ↓
+Docker Build
+   ↓
+DockerHub Push
+   ↓
+kubectl apply
+   ↓
+Kubernetes Deployment
+```
 ### 🚀 STEP 1 — Create Jenkins Namespace
 
 ```bash
@@ -36,12 +50,9 @@ metadata:
 spec:
   capacity:
     storage: 10Gi
-
   accessModes:
     - ReadWriteOnce
-
   persistentVolumeReclaimPolicy: Retain
-
   hostPath:
     path: /mnt/jenkins-data
 ```
@@ -61,11 +72,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: jenkins-pvc
   namespace: jenkins
-
 spec:
   accessModes:
     - ReadWriteOnce
-
   resources:
     requests:
       storage: 10Gi
@@ -83,86 +92,34 @@ Paste:
 ```bash
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: jenkins
   namespace: jenkins
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: jenkins
-
   template:
     metadata:
       labels:
         app: jenkins
-
     spec:
-
-      serviceAccountName: jenkins
-
       securityContext:
         fsGroup: 1000
-
-      initContainers:
-      - name: fix-permissions
-        image: busybox
-
-        command:
-        - sh
-        - -c
-        - |
-          chown -R 1000:1000 /var/jenkins_home
-          chown -R 1000:1000 /workspace
-
-        volumeMounts:
-        - name: jenkins-data
-          mountPath: /var/jenkins_home
-
-        - name: shared-workspace
-          mountPath: /workspace
-
       containers:
       - name: jenkins
-
-        image: jenkins/jenkins:lts-jdk17
-
-        securityContext:
-          runAsUser: 0
-
-        command:
-        - sh
-        - -c
-        - |
-          apt update && \
-          apt install -y docker.io curl && \
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-          /usr/bin/tini -- /usr/local/bin/jenkins.sh
-
+        image: jenkins/jenkins:lts
         ports:
         - containerPort: 8080
-
         - containerPort: 50000
-
         volumeMounts:
         - name: jenkins-data
           mountPath: /var/jenkins_home
-
-        - name: shared-workspace
-          mountPath: /workspace
-
       volumes:
       - name: jenkins-data
         persistentVolumeClaim:
           claimName: jenkins-pvc
-
-      - name: shared-workspace
-        persistentVolumeClaim:
-          claimName: jenkins-kaniko-workspace
 ```
 Apply:
 ```bash
@@ -181,13 +138,10 @@ kind: Service
 metadata:
   name: jenkins-service
   namespace: jenkins
-
 spec:
   type: NodePort
-
   selector:
     app: jenkins
-
   ports:
   - port: 8080
     targetPort: 8080
@@ -234,28 +188,109 @@ Inside Jenkins:
 Install Suggested Plugins
 ```
 Wait 5–10 minutes.
-#### ✅ The Jenkins plugins that we are required to install for this project.
-##### 
+
+### 🚀 STEP 10 — Create Admin User
+Create:
+* Username
+* Password
+* Email
+Then save.
+
+### 🚀 STEP 11 — Verify Jenkins Working
+Dashboard should open:
 ```
-1️⃣ Git Plugin
+Manage Jenkins
+New Item
+Build History
+```
+
+### 📌 Useful Commands
+Check all Jenkins resources:
+```bash
+kubectl get all -n jenkins
+```
+Check logs:
+```bash
+kubectl logs deployment/jenkins -n jenkins
+```
+Delete Jenkins:
+```bash
+kubectl delete ns jenkins
+```
+
+Jenkins is now running inside Kubernetes.
+### 🚀 STEP 2 — Create Persistent Volume
+Create:
+```bash
+vi jenkins-service.yaml
+```
+#### ✅ The Jenkins plugins that we are required to install for this project.
+ 
+```
+Git Plugin
 ```
 Purpose: Clone your GitHub repo
 Without this, Jenkins cannot pull your source code.
 
-2️⃣ Pipeline Plugin
+```
+Pipeline Plugin
+```
 Purpose: Enables Jenkinsfile-based pipelines
 This is the core plugin for CI/CD.
-
-
-
 ```
-
+Docker Pipeline Plugin
 ```
-
+Purpose: Allows Jenkins to:
+run docker build
+run docker push
+integrate Docker in pipelines
+Your pipeline needs this because you build Docker images.
 ```
-
+Credentials Binding Plugin
 ```
-Wait 5–10 minutes.
+Purpose: Pass credentials to environment variables
+Used for:
+Docker Hub username/password
+kubeconfig
+Example in your Jenkinsfile:
+DOCKERHUB = credentials('dockerhub')
+KUBECONFIG_FILE = credentials('kubeconfig')
+```
+Kubernetes CLI Plugin
+```
+Purpose: Allows Jenkins to run kubectl properly
+Without this plugin Jenkins cannot execute:
+kubectl apply -f
+kubectl rollout restart
+```
+SSH Agent Plugin
+```
+Purpose: (Optional but recommended)
+Needed if later you use SSH keys for GitHub or servers.
+```
+Workspace Cleanup Plugin
+```
+Purpose: Clean workspace after build
+Used in Jenkinsfile:
+cleanWs()
+Not required but recommended.
+
+⭐ Optional (but very useful)
+```
+Blue Ocean Plugin 
+```
+Better UI for viewing pipelines.
+```
+Timestamper Plugin
+```
+Adds timestamps to logs.
+```
+NodeJS
+```
+Global Package Management
+sh 'npm install'
+sh 'npm test'
+
 ### 🚀 STEP 2 — Create Persistent Volume
 Create:
 ```bash
