@@ -235,7 +235,10 @@ Install Suggested Plugins
 ```
 Wait 5–10 minutes.
 #### ✅ The Jenkins plugins that we are required to install for this project.
-##### ```1️⃣ Git Plugin```
+##### 
+```
+1️⃣ Git Plugin
+```
 Purpose: Clone your GitHub repo
 Without this, Jenkins cannot pull your source code.
 
