@@ -35,6 +35,7 @@ kubectl create namespace jenkins
 ```bash
 kubectl get ns
 ```
+
 ### 🚀 STEP 2 — Create Persistent Volume
 
 Create file:
@@ -92,30 +93,57 @@ Paste:
 ```bash
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
   name: jenkins
   namespace: jenkins
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: jenkins
+
   template:
     metadata:
       labels:
         app: jenkins
+
     spec:
+
       securityContext:
         fsGroup: 1000
-      containers:
-      - name: jenkins
-        image: jenkins/jenkins:lts
-        ports:
-        - containerPort: 8080
-        - containerPort: 50000
+
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+
+        command:
+        - sh
+        - -c
+        - chown -R 1000:1000 /var/jenkins_home
+
         volumeMounts:
         - name: jenkins-data
           mountPath: /var/jenkins_home
+
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts-jdk17
+
+        securityContext:
+          runAsUser: 0
+
+        ports:
+        - containerPort: 8080
+
+        - containerPort: 50000
+
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+
       volumes:
       - name: jenkins-data
         persistentVolumeClaim:
@@ -147,10 +175,7 @@ spec:
     targetPort: 8080
     nodePort: 32000
 ```
-Apply:
-```bash
-kubectl apply -f jenkins-service.yaml
-```
+
 ### 🚀 STEP 6 — Verify Jenkins Pod
 
 ```bash
@@ -164,10 +189,27 @@ Also verify service:
 ```bash
 kubectl get svc -n jenkins
 ```
+### 🚀 STEP 7 — Create Jenkins Data Directory on Node
+Since we are using hostPath storage, create directory in worker/master node.
+Run on the node where pod may run:
+```bash
+sudo mkdir -p /mnt/jenkins-data
+sudo chown -R 1000:1000 /mnt/jenkins-data
+sudo chmod -R 775 /mnt/jenkins-data
+```
+Verify:
+```
+ls -ld /mnt/jenkins-data
+```
+You should see owner:
+```
+1000 1000
+```
+because Jenkins container runs as UID 1000.
 ### 🚀 STEP 7 — Access Jenkins
 Open browser:
 ```bash
-http://NODE-IP:32000
+http://EC2-PUBLIC-IP:32000
 ```
 Example:
 ```bash
@@ -219,13 +261,14 @@ kubectl delete ns jenkins
 ```
 
 Jenkins is now running inside Kubernetes.
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
+
+#### ✅STEP 1 — Install Required Jenkins Plugins
+Open:
 ```
-#### ✅ The Jenkins plugins that we are required to install for this project.
- 
+Manage Jenkins
+ → Plugins
+ → Available Plugins
+```
 ```
 Git Plugin
 ```
@@ -291,6 +334,30 @@ Global Package Management
 sh 'npm install'
 sh 'npm test'
 
+After install:
+   Restart Jenkins
+   ```
+   kubectl rollout restart deployment jenkins -n jenkins
+   ```
+### ✅ STEP 2 — Install Docker Inside Jenkins Pod
+Very important.
+Our Jenkins pod currently cannot run:
+```bash
+docker build
+```
+because Docker CLI not installed.
+
+### 🔥 Real DevOps Practice
+Usually companies use:
+* Docker socket mount
+* Kaniko
+* Buildah
+* DinD
+* Kubernetes agents
+We will use:
+Kaniko
+This is real cloud-native DevOps practice.
+Kaniko builds Docker images INSIDE Kubernetes without Docker daemon.
 ### 🚀 STEP 2 — Create Persistent Volume
 Create:
 ```bash
@@ -304,68 +371,4 @@ Apply:
 ```bash
 kubectl apply -f jenkins-deployment.yaml
 ```
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
-```
-Paste:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-Apply:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
-```
-Paste:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-Apply:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
-```
-Paste:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-Apply:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
-```
-Paste:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-Apply:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-### 🚀 STEP 2 — Create Persistent Volume
-Create:
-```bash
-vi jenkins-service.yaml
-```
-Paste:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
-Apply:
-```bash
-kubectl apply -f jenkins-deployment.yaml
-```
+
