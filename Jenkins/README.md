@@ -206,7 +206,7 @@ You should see owner:
 1000 1000
 ```
 because Jenkins container runs as UID 1000.
-### 🚀 STEP 7 — Access Jenkins
+### 🚀 STEP 8 — Access Jenkins
 Open browser:
 ```bash
 http://EC2-PUBLIC-IP:32000
@@ -216,7 +216,7 @@ Example:
 http://13.x.x.x:32000
 ```
 
-### 🚀 STEP 8 — Get Jenkins Initial Password
+### 🚀 STEP 9 — Get Jenkins Initial Password
 Run:
 ```bash
 kubectl exec -it deployment/jenkins -n jenkins -- cat /var/jenkins_home/secrets/initialAdminPassword
@@ -224,21 +224,21 @@ kubectl exec -it deployment/jenkins -n jenkins -- cat /var/jenkins_home/secrets/
 Copy password.
 Paste into Jenkins UI.
 
-### 🚀 STEP 9 — Install Suggested Plugins
+### 🚀 STEP 10 — Install Suggested Plugins
 Inside Jenkins:
 ```
 Install Suggested Plugins
 ```
 Wait 5–10 minutes.
 
-### 🚀 STEP 10 — Create Admin User
+### 🚀 STEP 11 — Create Admin User
 Create:
 * Username
 * Password
 * Email
 Then save.
 
-### 🚀 STEP 11 — Verify Jenkins Working
+### 🚀 STEP 12 — Verify Jenkins Working
 Dashboard should open:
 ```
 Manage Jenkins
@@ -262,7 +262,7 @@ kubectl delete ns jenkins
 
 Jenkins is now running inside Kubernetes.
 
-#### ✅STEP 1 — Install Required Jenkins Plugins
+#### ✅STEP 13 — Install Required Jenkins Plugins
 Open:
 ```
 Manage Jenkins
@@ -339,7 +339,7 @@ After install:
    ```
    kubectl rollout restart deployment jenkins -n jenkins
    ```
-### ✅ STEP 2 — Install Docker Inside Jenkins Pod
+### ✅ STEP 14 — Install Docker Inside Jenkins Pod
 Very important.
 Our Jenkins pod currently cannot run:
 ```bash
@@ -355,20 +355,496 @@ Usually companies use:
 * DinD
 * Kubernetes agents
 We will use:
-Kaniko
+#### Kaniko
 This is real cloud-native DevOps practice.
 Kaniko builds Docker images INSIDE Kubernetes without Docker daemon.
-### 🚀 STEP 2 — Create Persistent Volume
+### Jenkins → Kaniko → DockerHub
+Since your kubeadm cluster uses containerd, we will use:
+
+Kaniko
+
+instead of Docker daemon.
+Flow becomes:
+```
+GitHub
+ → Jenkins
+      ↕ shared volume
+ → Kaniko Build
+ → DockerHub Push
+ → Kubernetes Deployment Update
+```
+
+### ✅ STEP 15 — Create DockerHub Secret
 Create:
 ```bash
-vi jenkins-service.yaml
+kubectl create secret docker-registry dockerhub-secret \
+--docker-server=https://index.docker.io/v1/ \
+--docker-username=YOUR_DOCKER_USERNAME \
+--docker-password=YOUR_DOCKER_PASSWORD \
+--docker-email=yourmail@gmail.com \
+-n jenkins
+```
+Use DockerHub Access Token (NOT password)
+Verify:
+```bash
+kubectl get secret -n jenkins
+```
+You should see:
+```bash
+dockerhub-secret
+```
+Verify Secret Type:
+```bash
+kubectl describe secret dockerhub-secret -n jenkins
+```
+or
+```
+kubectl get secret dockerhub-secret -n jenkins -o yaml
+```
+Type should be:
+```
+type: kubernetes.io/dockerconfigjson
+```
+If not → secret wrong.
+VERY IMPORTANT.
+
+If Fail We Can Create manually.
+Instead of docker-registry secret, create raw config.json manually
+#### STEP 15 — CREATE config.json
+On EC2:
+```bash
+mkdir docker-secret
+```
+Create file:
+```bash
+vi docker-secret/config.json
+```
+Paste EXACTLY:
+```JSON
+{
+  "auths": {
+    "https://index.docker.io/v1/": {
+      "username": "nadheer",
+      "password": "YOUR_PAT",
+      "auth": "BASE64_USERNAME:PAT"
+    }
+  }
+}
+```
+#### ✅ CREATE AUTH VALUE
+Run:
+```bash
+echo -n 'nadheer:YOUR_PAT' | base64
+```
+Copy output.
+Example:
+```
+bmFkaGVlcjphYmNkMTIz
+```
+Put that into:
+```
+"auth": "bmFkaGVlcjphYmNkMTIz"
+```
+#### DELETE OLD SECRET
+```bash
+kubectl delete secret dockerhub-secret -n jenkins
+```
+#### CREATE GENERIC SECRET
+```bash
+kubectl create secret generic dockerhub-secret \
+--from-file=config.json=./docker-secret/config.json \
+-n jenkins
+```
+
+##### 🎉 EXPECTED FINAL SUCCESS
+Watch Logs After Push To DockerHub We Can See.
+```bash
+kubectl logs -f kaniko -n jenkins
+```
+
+You should FINALLY see:
+```
+Pushed nadheer/ecommerce-frontend:Latest
+```
+Then image will appear in your Docker Hub account.
+
+### ✅ STEP 16 — CREATE SHARED PV
+Create:
+```bash
+vi jenkins-kaniko-pv.yaml
 ```
 Paste:
 ```bash
-kubectl apply -f jenkins-deployment.yaml
+apiVersion: v1
+kind: PersistentVolume
+
+metadata:
+  name: jenkins-kaniko-pv
+
+spec:
+  capacity:
+    storage: 5Gi
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+
+  hostPath:
+    path: /data/jenkins-kaniko-workspace
 ```
 Apply:
 ```bash
-kubectl apply -f jenkins-deployment.yaml
+kubectl apply -f jenkins-kaniko-pv.yaml
 ```
+Check:
+```bash
+kubectl get pv
+```
+
+### ✅ STEP 17 — CREATE SHARED PVC
+Create file:
+```bash
+vi jenkins-kaniko-pvc.yaml
+```
+Paste:
+```bash
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: jenkins-kaniko-workspace
+  namespace: jenkins
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 5Gi
+```
+Apply:
+```bash
+kubectl apply -f jenkins-kaniko-pvc.yaml
+```
+Check:
+```bash
+kubectl get pvc -n jenkins
+```
+
+### ✅ STEP 18 — MODIFY JENKINS DEPLOYMENT
+Recreate:
+```bash
+vi jenkins-deployment.yaml
+```
+Paste:
+```bash
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: jenkins
+  namespace: jenkins
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: jenkins
+
+  template:
+    metadata:
+      labels:
+        app: jenkins
+
+    spec:
+
+      serviceAccountName: jenkins
+
+      securityContext:
+        fsGroup: 1000
+
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+
+        command:
+        - sh
+        - -c
+        - |
+          chown -R 1000:1000 /var/jenkins_home
+          chown -R 1000:1000 /workspace
+
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+
+        - name: shared-workspace
+          mountPath: /workspace
+
+      containers:
+      - name: jenkins
+
+        image: jenkins/jenkins:lts-jdk17
+
+        securityContext:
+          runAsUser: 0
+
+        command:
+        - sh
+        - -c
+        - |
+          apt update && \
+          apt install -y docker.io curl && \
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+          /usr/bin/tini -- /usr/local/bin/jenkins.sh
+
+        ports:
+        - containerPort: 8080
+
+        - containerPort: 50000
+
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+
+        - name: shared-workspace
+          mountPath: /workspace
+
+      volumes:
+      - name: jenkins-data
+        persistentVolumeClaim:
+          claimName: jenkins-pvc
+
+      - name: shared-workspace
+        persistentVolumeClaim:
+          claimName: jenkins-kaniko-workspace
+```
+✅ SAVE & EXIT
+Deployment restarts automatically.
+Check:
+```bash
+kubectl get pods -n jenkins
+```
+##### ✅ VERIFY kubectl INSIDE POD
+```bash
+kubectl exec -it deploy/jenkins -n jenkins -- bash
+```
+Then:
+```bash
+kubectl version --client
+```
+Expected:
+```bash
+Client Version: v1.xx.x
+```
+
+
+### ✅ VERIFY INSIDE JENKINS POD   
+Run:
+```bash
+kubectl exec -it deploy/jenkins -n jenkins -- bash
+```
+Then:
+```bash
+df -h
+```
+You should see:
+```bash
+/workspace
+```
+mounted.
+🚨 IMPORTANT
+Kaniko pod ALSO needs same PVC mounted.
+Inside overrides JSON add:
+##### volumeMounts
+```JOSN
+{
+  "name": "shared-workspace",
+  "mountPath": "/workspace"
+}
+```
+##### volumes
+```JOSN
+{
+  "name": "shared-workspace",
+  "persistentVolumeClaim": {
+    "claimName": "jenkins-kaniko-workspace"
+  }
+}
+```
+##### 🎯Architecture becomes:
+```
+Jenkins Pod
+   └── /workspace
+
+Kaniko Pod
+   └── /workspace
+
+Shared PVC
+```
+### ✅ 19 FINAL JENKINS PIPELINE
+#### Manage Jenkins Global Tool Configuration
+```
+Manage Jenkins
+ → Global Tool Configuration
+```
+##### 1 — Git
+(MOST IMPORTANT)
+Find:
+```
+Git installations
+```
+Add:
+```
+Name: git
+```
+Path:
+```
+/usr/bin/git
+```
+##### ✅ 2 — NodeJS
+(Needed for your Ecommerce project)
+Install plugin first if missing:
+```
+NodeJS Plugin
+```
+Then in Global Tool Configuration:
+```
+NodeJS installations
+```
+Add:
+```
+Name: nodejs
+```
+Check:
+```
+Check:
+```
+Choose:
+* NodeJS 20.x LTS
+or
+* NodeJS 18.x LTS
+This is VERY important because your frontend/backend uses:
+```
+npm install
+npm run build
+```
+Use this Jenkinsfile:
+```bash
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'nodejs'
+    }
+
+    environment {
+        IMAGE_NAME = "nadheer/ecommerce-frontend:jenkintest2"
+    }
+
+    stages {
+
+        stage('Clone Code') {
+            steps {
+                dir('/workspace/app') {
+                    git branch: 'master',
+                    url: 'https://github.com/Nadheer18/Ecommerce-Project.git'
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('/workspace/app/frontend') {
+                    sh '''
+                    npm install
+                    npm run build
+                    '''
+                }
+            }
+        }
+
+        stage('Kaniko Build and Push') {
+            steps {
+
+                sh '''
+                kubectl delete pod kaniko -n jenkins --ignore-not-found=true
+
+                kubectl run kaniko \
+                --restart=Never \
+                --image=gcr.io/kaniko-project/executor:latest \
+                -n jenkins \
+                --overrides='
+                {
+                  "spec": {
+                    "containers": [{
+                      "name": "kaniko",
+                      "image": "gcr.io/kaniko-project/executor:latest",
+                      "args": [
+                        "--dockerfile=/workspace/app/frontend/Dockerfile",
+                        "--context=/workspace/app/frontend",
+                        "--destination='${IMAGE_NAME}'"
+                      ],
+                      "volumeMounts": [
+                        {
+                          "name": "docker-config",
+                          "mountPath": "/kaniko/.docker"
+                        },
+                        {
+                          "name": "shared-workspace",
+                          "mountPath": "/workspace"
+                        }
+                      ]
+                    }],
+                    "volumes": [
+                      {
+                        "name": "docker-config",
+                        "secret": {
+                          "secretName": "dockerhub-secret"
+                        }
+                      },
+                      {
+                        "name": "shared-workspace",
+                        "persistentVolumeClaim": {
+                          "claimName": "jenkins-kaniko-workspace"
+                        }
+                      }
+                    ],
+                    "restartPolicy": "Never"
+                  }
+                }'
+
+                kubectl wait --for=condition=Ready pod/kaniko -n jenkins --timeout=300s
+
+                kubectl logs -f kaniko -n jenkins
+                '''
+            }
+        }
+        stage('Deploy to Kubernetes') {
+    steps {
+
+        sh '''
+        kubectl apply -f /workspace/app/k8s/namespace.yaml
+        kubectl apply -f /workspace/app/k8s/frontend-deployment.yaml
+        kubectl apply -f /workspace/app/k8s/frontend-service.yaml
+        kubectl set image deployment/frontend \
+        frontend=nadheer/ecommerce-frontend:jenkintest2 \
+        -n ecom
+        '''
+    }
+}
+    }
+
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}
+```
+
 
