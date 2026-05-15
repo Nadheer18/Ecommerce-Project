@@ -281,7 +281,7 @@ Pipeline Plugin
 Purpose: Enables Jenkinsfile-based pipelines
 This is the core plugin for CI/CD.
 ```
-Docker Pipeline Plugin
+Docker Pipeline
 ```
 Purpose: Allows Jenkins to:
 run docker build
@@ -299,7 +299,7 @@ Example in your Jenkinsfile:
 DOCKERHUB = credentials('dockerhub')
 KUBECONFIG_FILE = credentials('kubeconfig')
 ```
-Kubernetes CLI Plugin
+Kubernetes CLI
 ```
 Purpose: Allows Jenkins to run kubectl properly
 Without this plugin Jenkins cannot execute:
@@ -375,42 +375,9 @@ GitHub
 ```
 
 ### ✅ STEP 15 — Create DockerHub Secret
-Create:
-```bash
-kubectl create secret docker-registry dockerhub-secret \
---docker-server=https://index.docker.io/v1/ \
---docker-username=YOUR_DOCKER_USERNAME \
---docker-password=YOUR_DOCKER_PASSWORD \
---docker-email=yourmail@gmail.com \
--n jenkins
-```
-Use DockerHub Access Token (NOT password)
-Verify:
-```bash
-kubectl get secret -n jenkins
-```
-You should see:
-```bash
-dockerhub-secret
-```
-Verify Secret Type:
-```bash
-kubectl describe secret dockerhub-secret -n jenkins
-```
-or
-```
-kubectl get secret dockerhub-secret -n jenkins -o yaml
-```
-Type should be:
-```
-type: kubernetes.io/dockerconfigjson
-```
-If not → secret wrong.
-VERY IMPORTANT.
 
-If Fail We Can Create manually.
 Instead of docker-registry secret, create raw config.json manually
-#### STEP 15 — CREATE config.json
+##### STEP 1 — CREATE config.json
 On EC2:
 ```bash
 mkdir docker-secret
@@ -424,32 +391,30 @@ Paste EXACTLY:
 {
   "auths": {
     "https://index.docker.io/v1/": {
-      "username": "nadheer",
-      "password": "YOUR_PAT",
-      "auth": "BASE64_USERNAME:PAT"
+      "username": "USER_NAME",
+      "password": "YOUR_PAT_TOKEN",
+      "auth": "PASTE_BASE64_OUTPUT_HERE"
     }
   }
 }
 ```
-#### ✅ CREATE AUTH VALUE
-Run:
-```bash
-echo -n 'nadheer:YOUR_PAT' | base64
+IMPORTANT:
+username = Docker hub user name
+password = real PAT Token
+auth = base64 output ONLY
+
+##### STEP 2 — GENERATE REAL BASE64
+Run EXACTLY:
 ```
-Copy output.
-Example:
+echo -n 'nadheer:YOUR_PAT_TOKEN' | base64
 ```
-bmFkaGVlcjphYmNkMTIz
+Example output:
 ```
-Put that into:
+bmFkaGVlcjpkY2tyX3BhdF9hYmNkZWYxMjM=
 ```
-"auth": "bmFkaGVlcjphYmNkMTIz"
-```
-#### DELETE OLD SECRET
-```bash
-kubectl delete secret dockerhub-secret -n jenkins
-```
-#### CREATE GENERIC SECRET
+Copy ENTIRE output.
+
+##### STEP 3 CREATE GENERIC SECRET
 ```bash
 kubectl create secret generic dockerhub-secret \
 --from-file=config.json=./docker-secret/config.json \
@@ -624,10 +589,16 @@ spec:
           claimName: jenkins-kaniko-workspace
 ```
 ✅ SAVE & EXIT
+
 Deployment restarts automatically.
 Check:
 ```bash
 kubectl get pods -n jenkins
+```
+Check inside po
+```
+kubectl exec -it deploy/jenkins -n jenkins -- bash
+kubectl --version
 ```
 ##### ✅ VERIFY kubectl INSIDE POD
 ```bash
@@ -686,7 +657,60 @@ Kaniko Pod
 
 Shared PVC
 ```
-### ✅ 19 FINAL JENKINS PIPELINE
+### ✅ 19 Create Jenkins service account:
+```
+kubectl create serviceaccount jenkins -n jenkins
+```
+Then Check:
+```
+kubectl get sa -n jenkins
+```
+You should see:
+```
+jenkins
+default
+```
+
+
+### ✅ 20 GIVE JENKINS PERMISSIONS
+Create RBAC YAML.
+Create file:
+```
+vim jenkins-rbac.yaml
+```
+Paste this:
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+
+metadata:
+  name: jenkins-admin
+
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: jenkins
+
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+```
+apply:
+```
+kubectl apply -f jenkins-rbac.yaml
+```
+Verify
+```
+kubectl auth can-i delete pods \
+--as=system:serviceaccount:jenkins:jenkins \
+-n jenkins
+```
+Expected:
+```
+yes
+```
+### ✅ 21 FINAL JENKINS PIPELINE
 #### Manage Jenkins Global Tool Configuration
 ```
 Manage Jenkins
