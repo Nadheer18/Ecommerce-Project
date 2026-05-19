@@ -767,7 +767,8 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "nadheer/ecommerce-frontend:jenkintest2"
+        FRONTEND_IMAGE_NAME = "nadheer/ecommerce-frontend:${JOB_NAME}-${BUILD_NUMBER}"
+        BACKEND_IMAGE_NAME = "nadheer/ecommerce-backend:${JOB_NAME}-${BUILD_NUMBER}"
     }
 
     stages {
@@ -791,14 +792,24 @@ pipeline {
                 }
             }
         }
+        
+        stage('Build Backend') {
+            steps {
+                dir('/workspace/app/backend') {
+                    sh '''
+                    npm install
+                    '''
+                }
+            }
+        }
 
-        stage('Kaniko Build and Push') {
+        stage('Kaniko Build and Push Frontend Image') {
             steps {
 
                 sh '''
-                kubectl delete pod kaniko -n jenkins --ignore-not-found=true
+                kubectl delete pod kaniko-frontend -n jenkins --ignore-not-found=true
 
-                kubectl run kaniko \
+                kubectl run kaniko-frontend \
                 --restart=Never \
                 --image=gcr.io/kaniko-project/executor:latest \
                 -n jenkins \
@@ -806,12 +817,12 @@ pipeline {
                 {
                   "spec": {
                     "containers": [{
-                      "name": "kaniko",
+                      "name": "kaniko-frontend",
                       "image": "gcr.io/kaniko-project/executor:latest",
                       "args": [
                         "--dockerfile=/workspace/app/frontend/Dockerfile",
                         "--context=/workspace/app/frontend",
-                        "--destination='${IMAGE_NAME}'"
+                        "--destination='${FRONTEND_IMAGE_NAME}'"
                       ],
                       "volumeMounts": [
                         {
@@ -842,12 +853,70 @@ pipeline {
                   }
                 }'
 
-                kubectl wait --for=condition=Ready pod/kaniko -n jenkins --timeout=300s
+                kubectl wait --for=condition=Ready pod/kaniko-frontend -n jenkins --timeout=300s
 
-                kubectl logs -f kaniko -n jenkins
+                kubectl logs -f kaniko-frontend -n jenkins
                 '''
             }
         }
+        
+        stage('Kaniko Build and Push Backend Image') {
+            steps {
+
+                sh '''
+                kubectl delete pod kaniko-backend -n jenkins --ignore-not-found=true
+
+                kubectl run kaniko-backend \
+                --restart=Never \
+                --image=gcr.io/kaniko-project/executor:latest \
+                -n jenkins \
+                --overrides='
+                {
+                  "spec": {
+                    "containers": [{
+                      "name": "kaniko-backend",
+                      "image": "gcr.io/kaniko-project/executor:latest",
+                      "args": [
+                        "--dockerfile=/workspace/app/backend/Dockerfile",
+                        "--context=/workspace/app/backend",
+                        "--destination='${BACKEND_IMAGE_NAME}'"
+                      ],
+                      "volumeMounts": [
+                        {
+                          "name": "docker-config",
+                          "mountPath": "/kaniko/.docker"
+                        },
+                        {
+                          "name": "shared-workspace",
+                          "mountPath": "/workspace"
+                        }
+                      ]
+                    }],
+                    "volumes": [
+                      {
+                        "name": "docker-config",
+                        "secret": {
+                          "secretName": "dockerhub-secret"
+                        }
+                      },
+                      {
+                        "name": "shared-workspace",
+                        "persistentVolumeClaim": {
+                          "claimName": "jenkins-kaniko-workspace"
+                        }
+                      }
+                    ],
+                    "restartPolicy": "Never"
+                  }
+                }'
+
+                kubectl wait --for=condition=Ready pod/kaniko-backend -n jenkins --timeout=300s
+
+                kubectl logs -f kaniko-backend -n jenkins
+                '''
+            }
+        }
+        
         stage('Deploy to Kubernetes') {
     steps {
 
@@ -855,9 +924,20 @@ pipeline {
         kubectl apply -f /workspace/app/k8s/namespace.yaml
         kubectl apply -f /workspace/app/k8s/frontend-deployment.yaml
         kubectl apply -f /workspace/app/k8s/frontend-service.yaml
+        kubectl apply -f /workspace/app/k8s/backend-deployment.yaml
+        kubectl apply -f /workspace/app/k8s/backend-service.yaml
+        kubectl apply -f /workspace/app/k8s/mysql-deployment.yaml
+        kubectl apply -f /workspace/app/k8s/mysql-service.yaml
+        kubectl apply -f /workspace/app/k8s/ingress.yaml
+		kubectl apply -f /workspace/app/k8s/ecom-backend-secret.yaml
         kubectl set image deployment/frontend \
-        frontend=nadheer/ecommerce-frontend:jenkintest2 \
+        frontend=nadheer/ecommerce-frontend:${JOB_NAME}-${BUILD_NUMBER} \
         -n ecom
+        kubectl set image deployment/backend \
+        backend=nadheer/ecommerce-backend:${JOB_NAME}-${BUILD_NUMBER} \
+        -n ecom
+        kubectl rollout status deployment/frontend -n ecom
+        kubectl rollout status deployment/backend -n ecom
         '''
     }
 }
@@ -865,6 +945,10 @@ pipeline {
 
     post {
         always {
+            sh '''
+        kubectl delete pod kaniko-frontend -n jenkins --ignore-not-found=true
+        kubectl delete pod kaniko-backend -n jenkins --ignore-not-found=true
+        '''
             deleteDir()
         }
     }
