@@ -1,0 +1,78 @@
+---
+- name: Clone GitHub repo
+  git:
+    repo: 'https://github.com/Nadheer18/Ecommerce-Project.git'
+    dest: /tmp/Ecommerce-Project
+    version: master
+
+- name: Create Jenkins directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: "0775"
+  loop:
+    - /mnt/jenkins-data
+    - /data/jenkins-kaniko-workspace
+
+- name: Create docker secret directory
+  file:
+    path: /tmp/docker-secret
+    state: directory
+    mode: '0700'
+
+- name: Apply Jenkins Namespace
+  shell: |
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/namespace.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Create Jenkins ServiceAccount
+  shell: |
+    kubectl create serviceaccount jenkins -n jenkins --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Apply RBAC
+  shell: |
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-rbac.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Apply PV
+  shell: |
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-pv.yaml
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-kaniko-pv.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Apply PVC
+  shell: |
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-pvc.yaml
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-kaniko-pvc.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Apply Jenkins Deployment And Services
+  shell: |
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-deployment.yaml
+
+- name: Wait for Jenkins deployment
+  shell: |
+    kubectl rollout status deployment/jenkins -n jenkins --timeout=300s
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Get Jenkins Resources
+  shell: |
+    kubectl get all,pv,pvc -n jenkins
+  register: output
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- debug:
+    var: output.stdout_lines
+    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/jenkins-service.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
