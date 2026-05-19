@@ -1,0 +1,5 @@
+- name: Apply Kubernetes jenkins
+  hosts: master
+  become: yes
+  roles:
+    - jenkins
