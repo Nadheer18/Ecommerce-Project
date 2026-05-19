@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: nadheerkv.in
+  - host: v14.nadheerkv.in
     http:
       paths:
       - path: /api
@@ -35,7 +35,7 @@ spec:
             port:
               number: 80
 
-  - host: www.nadheerkv.in
+  - host: www.v14.nadheerkv.in
     http:
       paths:
       - path: /api
