@@ -16,6 +16,7 @@ spec:
       containers:
       - name: frontend
         image: nadheer/ecommerce-frontend:v1.3.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 
