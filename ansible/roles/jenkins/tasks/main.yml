@@ -24,7 +24,7 @@
 
 - name: Apply Jenkins Namespace
   shell: |
-    kubectl apply -f /tmp/Ecommerce-Project/Jenkins/namespace.yaml
+    kubectl create namespace jenkins
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
 
