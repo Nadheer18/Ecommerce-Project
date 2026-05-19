@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: jenkins
+  namespace: jenkins
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: jenkins
+
+  template:
+    metadata:
+      labels:
+        app: jenkins
+
+    spec:
+
+      serviceAccountName: jenkins
+
+      securityContext:
+        fsGroup: 1000
+
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+
+        command:
+        - sh
+        - -c
+        - |
+          chown -R 1000:1000 /var/jenkins_home
+          chown -R 1000:1000 /workspace
+
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+
+        - name: shared-workspace
+          mountPath: /workspace
+
+      containers:
+      - name: jenkins
+
+        image: jenkins/jenkins:lts-jdk17
+
+        securityContext:
+          runAsUser: 0
+
+        command:
+        - sh
+        - -c
+        - |
+          apt update && \
+          apt install -y docker.io curl && \
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+          /usr/bin/tini -- /usr/local/bin/jenkins.sh
+
+        ports:
+        - containerPort: 8080
+
+        - containerPort: 50000
+
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+
+        - name: shared-workspace
+          mountPath: /workspace
+
+      volumes:
+      - name: jenkins-data
+        persistentVolumeClaim:
+          claimName: jenkins-pvc
+
+      - name: shared-workspace
+        persistentVolumeClaim:
+          claimName: jenkins-kaniko-workspace
